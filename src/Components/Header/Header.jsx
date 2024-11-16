@@ -6,10 +6,10 @@ export default function Header() {
     <div className="flex justify-between items-center bg-[--main] p-4 lg:px-10 h-[66px]">
     <div className="flex items-center space-x-2">
       <img className="h-12" src={logo} alt="" />
-      <span className="hidden sm:inline  text-white font-bold text-3xl font-roboto">BetPay</span>
+      <span className="hidden sm:inline  text-white font-bold text-3xl font-roboto">BetPayyyyyy</span>
     </div>
     <div className="text-white font-bold text-3xl font-roboto sm:hidden">
-      BetPayyyyy
+      BetPay
     </div>
     <div>
       <img className="h-12" src={logo2} alt="" />
