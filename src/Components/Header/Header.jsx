@@ -9,7 +9,7 @@ export default function Header() {
       <span className="hidden sm:inline  text-white font-bold text-3xl font-roboto">BetPay</span>
     </div>
     <div className="text-white font-bold text-3xl font-roboto sm:hidden">
-      BetPay
+      BetPayyyyy
     </div>
     <div>
       <img className="h-12" src={logo2} alt="" />
