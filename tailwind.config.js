@@ -11,7 +11,8 @@ export default {
       },
       colors: {
         bgYellow: '#facc15', 
-        customteal: '#00C2CE14'
+        customteal: '#00C2CE14',
+        'custom-black-opacity': '#000000B2' 
       },
     },
   },

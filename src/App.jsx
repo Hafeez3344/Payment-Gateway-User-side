@@ -1,3 +1,4 @@
+import "./app.css"
 import { Routes, Route } from "react-router-dom";
 import MainPage from "./Pages/Main-Page/MainPage";
 import WaitingforUPIApproval from "./Pages/Waiting-for-UPI-Approval/WaitingforUPIApproval";

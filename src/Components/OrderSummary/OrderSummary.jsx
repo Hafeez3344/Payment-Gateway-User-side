@@ -2,26 +2,26 @@ import React from 'react';
 
 function OrderSummary({ amount, tax, subtotal }) {
   return (
-    <div className="text-gray-400 font-bold">
-      <h2 className="text-base sm:text-lg lg:text-xl text-black font-bold mb-4">
+    <div className="text-gray-400 lg:px-[22px]">
+      <h2 className="sm:text-[21px] font-[700]  text-black mb-4">
         Order Summary
       </h2>
-      <div className="flex justify-between text-xs sm:text-sm lg:text-base mb-2">
+      <div className="flex font-[600] justify-between sm:text-sm  mb-2">
         <span>Amount:</span>
         <span>Rs: {amount}</span>
       </div>
-      <div className="flex justify-between text-xs sm:text-sm lg:text-base mb-2">
+      <div className="flex font-[600] justify-between  sm:text-sm  mb-2">
         <span>Tax:</span>
         <span>16% ({tax})</span>
       </div>
-      <div className="flex justify-between mt-4 text-xs sm:text-sm lg:text-base">
+      <div className="flex font-[600] justify-between  mt-4 sm:text-sm ">
         <span>Sub Total:</span>
-        <span>{subtotal}</span>
+        <span>Rs: {subtotal}</span>
       </div>
-      <div className="border-b-4 pt-3 sm:pt-5"></div>
-      <div className="flex justify-between text-sm sm:text-base text-black mt-4">
+      <div className="border-b-2 pt-3 sm:pt-5"></div>
+      <div className="flex justify-between  font-bold text-sm sm:text-base text-black mt-4">
         <span>Total:</span>
-        <span className="text-orange-500">{subtotal}</span>
+        <span className="text-[--main]">Rs: {subtotal}</span>
       </div>
     </div>
   );

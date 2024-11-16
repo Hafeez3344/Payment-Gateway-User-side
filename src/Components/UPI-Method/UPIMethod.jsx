@@ -1,63 +1,96 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Qrcode from "../../assets/Qrcode.png";
+import Qrcode from "../../assets/Qrcode.svg";
+import attention from "../../assets/attention.gif";
+import cloudupload from "../../assets/cloudupload.svg";
 
 function UPIMethod({ selectedUPIMethod = "viaQR" }) {
   const navigate = useNavigate();
+  useEffect(() => {
+    window.scroll(0, 0);
+  }, []);
 
   return (
-    <div className="p-4 min-h-[600px] flex flex-col justify-between">
-      <div>
+    <div className="rounded-tr-md rounded-br-md flex flex-col">
+      <div className="flex flex-col items-start">
         {selectedUPIMethod === "viaQR" ? (
-          <>
-            <p className="text-xl sm:text-3xl font-bold text-center sm:text-left mb-4">
+          <div>
+            <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
               Scan to Pay
             </p>
-            <img
-              src={Qrcode}
-              alt="QR Code"
-              className="w-16 sm:w-20 lg:w-32 mx-auto sm:mx-0 mb-4"
-            />
-            <p className="font-bold text-sm sm:text-base mb-4 text-center sm:text-left">
-              After transferring the payment to the UPI Account, please attach
-              the receipt below.
-            </p>
-          </>
+            <div className="flex gap-[30px] items-center">
+              <img
+                src={Qrcode}
+                alt="QR Code"
+                className="w-[95px] sm:w-[110px]"
+              />
+              <div className="mb-4">
+                <p className="mb-1 flex items-center gap-[4px]">
+                  <span className="text-[16px] font-[700]">Scan and Pay</span>{" "}
+                  <span className="text-[17px] font-[700] text-[--main] mb-[-2px]">
+                    ₹1160
+                  </span>
+                </p>
+                <p className="text-[15px]">
+                  <span className="font-[500]">UPI ID:</span>{" "}
+                  paymentrahul198@upi.com
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center my-[18px]">
+              <img
+                src={attention}
+                alt="Attention Sign"
+                className="w-12 sm:w-16 lg:w-[90px] mb-2 sm:mb-0 ml-[-22px]"
+              />
+              <p className="italic text-gray-500 text-[15px]">
+                After transfer the payment in the UPI <br /> Account, please
+                attach the receipt below.
+              </p>
+            </div>
+          </div>
         ) : (
-          <>
-            <p className="text-xl sm:text-3xl font-bold mb-4 text-center sm:text-left">
-              Enter UPI ID
+          <div className="flex flex-col items-center sm:items-start">
+            <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
+              Scan to Pay
             </p>
             <input
               type="text"
               placeholder="Enter UPI ID"
-              className="w-full px-3 py-2 sm:px-4 sm:py-4 border rounded-md mb-6"
+              className="w-[300px] sm:w-[450px] h-[45px] border px-[20px]  rounded-md focus:outline-none text-[14px]"
             />
             <button
-              onClick={() => navigate("/Waiting-for-UPI-Approval")}
-              className="w-full py-3 sm:py-4 bg-yellow-400 text-white rounded-md font-semibold mb-4"
+              onClick={() => navigate("/waiting-for-upi-approval")}
+              className="w-full sm:w-[450px] bg-[--main] font-[500] mt-4 text-[15px] h-[45px] text-white rounded-md"
             >
               Pay Now
             </button>
-          </>
+          </div>
         )}
       </div>
 
-      {/* Conditionally render the bottom section only for "viaQR" */}
       {selectedUPIMethod === "viaQR" && (
-        <div className="flex flex-col gap-2 sm:gap-4 mx-2 sm:mx-14">
-          <input
-            type="file"
-            className="w-full px-3 py-2 sm:px-4 sm:py-4 border rounded-md"
-          />
+        <div className="flex flex-col gap-2 sm:gap-4">
+          <div className="flex gap-3 items-center">
+            <label className="w-[150px]">
+              <input type="file" className="cursor-pointer hidden " />
+              <div className="px-3 py-2 sm:px-4 h-[45px] border border-black rounded-md cursor-pointer flex items-center justify-center text-gray-700 ">
+                <img src={cloudupload} alt="Upload" className="w-5 h-5 mr-2" />
+                <span className="text-gray-400 font-[400]">Upload File</span>
+              </div>
+            </label>
+            <p className="text-[14px] font-[600]">
+              Attach transaction slip here
+            </p>
+          </div>
           <input
             type="text"
             placeholder="Enter UTR Number"
-            className="w-full px-3 py-2 sm:px-4 sm:py-4 border rounded-md"
+            className="w-full text-gray-400 font-[400] border border-[--secondary] h-[45px] px-[20px] rounded-md focus:outline-none text-[15px]"
           />
           <button
             onClick={() => navigate("/payment-done")}
-            className="w-full py-3 sm:py-4 bg-yellow-400 text-white rounded-md font-semibold"
+            className="w-full bg-[--main] font-[500] text-[15px] h-[45px] text-white rounded-md"
           >
             Submit Now
           </button>

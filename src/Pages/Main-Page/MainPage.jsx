@@ -1,17 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../../Layout/Layout";
 import upilogo from "../../assets/upilogo.png";
-import banklogo from "../../assets/banklogo.png";
+import banklogo from "../../assets/banklogo.svg";
 import OrderSummary from "../../Components/OrderSummary/OrderSummary";
-import viaQr from "../../assets/viaQr.png";
-import arrow from "../../assets/arrow.png";
-import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.png";
+import viaQr from "../../assets/viaQr.svg";
+import arrow from "../../assets/arrow.svg";
+import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import UPIMethod from "../../Components/UPI-Method/UPIMethod";
-import CanaraBank from "../../assets/CanaraBank.png";
-import BankofMaharashtra from "../../assets/BankofMaharashtra.png";
-import UCOBank from "../../assets/UCOBank.png";
-import Qrcode from "../../assets/Qrcode.png";
+import CanaraBank from "../../assets/CanaraBank.svg";
+import BankofMaharashtra from "../../assets/BankofMaharashtra.svg";
+import UCOBank from "../../assets/UCOBank.svg";
+import Qrcode from "../../assets/Qrcode.svg";
+import attention from "../../assets/attention.gif";
+import cloudupload from "../../assets/cloudupload.svg";
 
 function MainPage() {
   const [selectedMethod, setSelectedMethod] = useState("UPI");
@@ -19,7 +21,10 @@ function MainPage() {
   const [selectedBankMethod, setSelectedBankMethod] =
     useState("Bank of Baroda");
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  useEffect(() => {
+    window.scroll(0, 0);
+  }, []);
 
   const paymentDetails = {
     UPI: { amount: 1000, tax: 160, subtotal: 1160 },
@@ -30,26 +35,8 @@ function MainPage() {
     "Bank of Baroda": {
       bankName: "Bank of Baroda",
       accountHolder: "Payment Processor LTD",
-      accountNumber: "21312489038490",
-      iban: "BOB2131248903813490",
-    },
-    "Canara Bank": {
-      bankName: "Canara Bank",
-      accountHolder: "Canara Bank Processor",
-      accountNumber: "23123984391239",
-      iban: "CAN123123981234",
-    },
-    "Bank of Maharashtra": {
-      bankName: "Bank of Maharashtra",
-      accountHolder: "Maharashtra Payments",
-      accountNumber: "23123984391239",
-      iban: "MHA231231231233",
-    },
-    "UCO Bank": {
-      bankName: "UCO Bank",
-      accountHolder: "UCO Payments Ltd",
-      accountNumber: "87323984391239",
-      iban: "UCO831231231233",
+      accountNumber: "2131248903849",
+      iban: "BOB213124890",
     },
   };
 
@@ -58,162 +45,91 @@ function MainPage() {
 
   return (
     <Layout>
-      <div className="w-full lg:w-4/5 mx-auto my-4 sm:my-10 px-4 sm:px-0">
-        <main className="flex flex-col lg:flex-row gap-2">
-          <div className="w-full lg:w-[70%] bg-white p-4 sm:p-6 rounded-md">
-            <div className="flex flex-col sm:flex-row mb-6 sm:mb-12">
+      <div className="w-full max-w-[1200px] mx-auto my-[100px] sm:my-[60px] px-4 sm:px-0 md:scale-[0.9]">
+        <main className="flex flex-col-reverse lg:flex-row gap-2">
+          <div className="w-full lg:w-[70%] max-w-[1000px] bg-white sm:px-6 lg:pe-[40px]">
+            <div className="flex flex-col sm:flex-row mb-8 sm:mb-12">
               <div
                 onClick={() => setSelectedMethod("UPI")}
-                className={`w-[231] h-[113] sm:w-1/2 p-3 sm:p-4 rounded-l-md border ${
+                className={`w-full sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${
                   selectedMethod === "UPI"
-                    ? "border-yellow-500"
-                    : "border-gray-300"
-                } flex items-center justify-center cursor-pointer`}
+                    ? "outline outline-[2px] outline-[--main]"
+                    : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+                } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
               >
                 <img
                   src={upilogo}
                   alt="UPI Logo"
-                  className="w-[115] h-[59] sm:h-20 lg:h-40"
+                  className="w-24 h-24 sm:w-32 sm:h-32 lg:w-52 lg:h-52 object-contain"
                 />
               </div>
               <div
                 onClick={() => setSelectedMethod("Bank")}
-                className={`w-[231] h-[113] sm:w-1/2 p-3 sm:p-4 rounded-r-md border ${
+                className={`w-full sm:w-1/2 p-3 sm:p-4 ${
                   selectedMethod === "Bank"
-                    ? "border-yellow-500"
-                    : "border-gray-300"
-                } flex items-center justify-center cursor-pointer`}
+                    ? "outline outline-[2px] outline-[--main]"
+                    : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+                } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
               >
                 <img
                   src={banklogo}
                   alt="Bank Transfer Logo"
-                  className="w-[115] h-[59] sm:h-20 lg:h-40"
+                  className="w-24 h-24 sm:w-32 sm:h-32 lg:w-60 lg:h-60 object-contain"
                 />
               </div>
             </div>
 
             {/* Sidebar & Payment Form Section */}
-            <div className="flex flex-col sm:flex-row">
+            <div className="flex flex-col sm:flex-row min-h-[700px]">
               {/* Sidebar - Dynamic Content */}
-              <div className="w-full sm:w-1/3 bg-gray-200 border rounded-tl-md rounded-bl-md border-gray-300 p-2 flex flex-col">
+              <div className="w-full sm:w-1/3 bg-[--grayBg] border border-[--secondary] flex flex-col gap-2">
                 {selectedMethod === "UPI" ? (
                   <div>
                     <div
                       onClick={() => setSelectedUPIMethod("viaQR")}
-                      className={`p-5 border-l-8 border flex gap-4 cursor-pointer ${
+                      className={`p-2 border-l-[6px] flex items-center gap-2 cursor-pointer ${
                         selectedUPIMethod === "viaQR"
-                          ? "bg-white border-yellow-400 text-black"
-                          : "bg-gray-200 border-white text-gray-700"
+                          ? "bg-white border-[--main] text-black"
+                          : "bg-[--grayBg] border-[gray-900] text-gray-700"
                       }`}
                     >
-                      <img src={viaQr} alt="Via QR" />
-                      <p className="font-bold">UPI (via QR Scan)</p>
+                      <img src={viaQr} alt="Via QR" className="w-8 h-8" />
+                      <p className="font-bold text-[19px]">UPI</p>
+                      <span className="text-[18px] mt-[1px]">(via QR Scan)</span>
                     </div>
 
-                    <div
-                      onClick={() => setSelectedUPIMethod("viaApp")}
-                      className={`p-5 border-l-8 border  flex gap-4 cursor-pointer ${
-                        selectedUPIMethod === "viaApp"
-                          ? "bg-white border-yellow-400 text-black"
-                          : "bg-gray-200 border-white text-gray-700"
-                      }`}
-                    >
-                      <img src={arrow} alt="Arrow" />
-                      <p className="font-bold">UPI (via UPI App)</p>
+                    <div className="border-t-2 border-b-2 border-gray-300">
+                      <div
+                        onClick={() => setSelectedUPIMethod("viaApp")}
+                        className={`p-2  border-l-[6px] flex  gap-2 cursor-pointer ${
+                          selectedUPIMethod === "viaApp"
+                            ? "bg-white border-[--main] "
+                            : "bg-[--grayBg] border-[gray-900]"
+                        }`}
+                      >
+                        <img src={arrow} alt="Arrow" className="w-8 h-8" />
+                        <p className="font-bold text-[19px]">UPI</p>
+                        <span className="text-[18px] mt-[1px]">(via UPI App)</span>
+                      </div>
                     </div>
                   </div>
                 ) : (
                   <div>
                     <div
                       onClick={() => setSelectedBankMethod("Bank of Baroda")}
-                      className={`p-2 border-l-8 border flex gap-4 cursor-pointer ${
+                      className={`  border-l-[6px] flex gap-1 cursor-pointer ${
                         selectedBankMethod === "Bank of Baroda"
-                          ? "bg-white border-yellow-400 text-black"
-                          : "bg-gray-200 border-white text-gray-700"
+                          ? "bg-white border-l-[6px] border-l-[--bred] text-black border-b-2 border-gray-300"
+                          : "bg-gray-500 border-l-[6px] border-l-[--bred] text-gray-700 "
                       }`}
                     >
                       <img
-                        className="w-12 h-12"
+                        className="w-12 h-12 ml-1"
                         src={BankOfBarodaLogo}
                         alt="Bank of Baroda logo"
                       />
-                      <p
-                        className={`text-gray-700 font-bold items-center flex ${
-                          selectedBankMethod === "Bank of Baroda"
-                            ? "text-black"
-                            : ""
-                        }`}
-                      >
+                      <p className=" text-[19px] font-[700] pt-2">
                         Bank of Baroda
-                      </p>
-                    </div>
-                    <div
-                      onClick={() => setSelectedBankMethod("Canara Bank")}
-                      className={`p-2 border-l-8 border flex gap-4 cursor-pointer ${
-                        selectedBankMethod === "Canara Bank"
-                          ? "bg-white border-yellow-400 text-black"
-                          : "bg-gray-200 border-white text-gray-700"
-                      }`}
-                    >
-                      <img
-                        className="w-12 h-12"
-                        src={CanaraBank}
-                        alt="Canara Bank logo"
-                      />
-                      <p
-                        className={`text-gray-700 font-bold items-center flex ${
-                          selectedBankMethod === "Canara Bank"
-                            ? "text-black"
-                            : ""
-                        }`}
-                      >
-                        Canara Bank
-                      </p>
-                    </div>
-                    <div
-                      onClick={() =>
-                        setSelectedBankMethod("Bank of Maharashtra")
-                      }
-                      className={`p-2 border-l-8 border flex gap-4 cursor-pointer ${
-                        selectedBankMethod === "Bank of Maharashtra"
-                          ? "bg-white border-yellow-400 text-black"
-                          : "bg-gray-200 border-white text-gray-700"
-                      }`}
-                    >
-                      <img
-                        className="w-12 h-12"
-                        src={BankofMaharashtra}
-                        alt="Bank of Maharashtra logo"
-                      />
-                      <p
-                        className={`text-gray-700 font-bold items-center flex ${
-                          selectedBankMethod === "Bank of Maharashtra"
-                            ? "text-black"
-                            : ""
-                        }`}
-                      >
-                        Bank of Maharashtra
-                      </p>
-                    </div>
-                    <div
-                      onClick={() => setSelectedBankMethod("UCO Bank")}
-                      className={`p-2 border-l-8 border flex gap-4 cursor-pointer ${
-                        selectedBankMethod === "UCO Bank"
-                          ? "bg-white border-yellow-400 text-black"
-                          : "bg-gray-200 border-white text-gray-700"
-                      }`}
-                    >
-                      <img
-                        className="w-12 h-12"
-                        src={UCOBank}
-                        alt="UCO Bank logo"
-                      />
-                      <p
-                        className={`text-gray-700 font-bold items-center flex ${
-                          selectedBankMethod === "UCO Bank" ? "text-black" : ""
-                        }`}
-                      >
-                        UCO Bank
                       </p>
                     </div>
                   </div>
@@ -221,37 +137,93 @@ function MainPage() {
               </div>
 
               {/* Payment Form Section */}
-              <div className="w-full sm:w-2/3 border rounded-tr-md rounded-br-md p-8">
+              <div className="w-full sm:w-2/3 border rounded-r-[10px] px-[1.7rem] py-[1.3rem]">
                 {selectedMethod === "UPI" ? (
                   <UPIMethod selectedUPIMethod={selectedUPIMethod} />
                 ) : (
-                  <div>
-                    <p className="text-xl sm:text-3xl font-bold mb-4 text-center sm:text-left">
+                  <div className="rounded-tr-md rounded-br-md flex flex-col">
+                    <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
                       Scan to Pay
                     </p>
                     <img
                       src={Qrcode}
                       alt="QR Code"
-                      className="w-16 sm:w-20 lg:w-32 mx-auto sm:mx-0 mb-4"
+                      className="w-[95px] sm:w-[110px] mb-4"
                     />
-                    <div className="font-bold text-sm sm:text-base mb-4">
-                      <p className="mb-2">
-                        Bank Name: <span>{selectedBank.bankName}</span>
-                      </p>
-                      <p>Account Holder Name: {selectedBank.accountHolder}</p>
-                      <p>Account Number: {selectedBank.accountNumber}</p>
-                      <p>IBAN: {selectedBank.iban}</p>
+                    <div className="text-sm sm:text-base font-roboto mb-4 mt-9">
+                      <div className="grid grid-cols-2 gap-y-1 text-[17px] sm:text-[23px] font-[700] text-gray-700">
+                        <span className="text-[16px] font-[700] text-gray-700">
+                          Bank Name:
+                        </span>
+                        <span className="text-[16px]">
+                          {selectedBank.bankName}
+                        </span>
+
+                        <span className="text-[16px] font-[700] text-gray-700">
+                          Account Holder Name:
+                        </span>
+                        <span className="text-[16px]">
+                          {selectedBank.accountHolder}
+                        </span>
+
+                        <span className="text-[16px] font-[700] text-gray-700">
+                          Account Number:
+                        </span>
+                        <span className="text-[16px]">
+                          {selectedBank.accountNumber}
+                        </span>
+
+                        <span className="text-[16px] font-[700] text-gray-700">
+                          IBAN:
+                        </span>
+                        <span className="text-[16px] break-words">
+                          {selectedBank.iban}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-2 sm:gap-4">
-                      <input
-                        type="file"
-                        className="w-full h-[52px] border rounded-md text-gray-400 px-8"
+
+                    <div className="flex items-center space-x-3 sm:space-x-1 mb-4">
+                      <img
+                        src={attention}
+                        alt="Attention Sign"
+                        className="w-12 sm:w-16 lg:w-24 -ml-5"
                       />
-                    
+                      <p className="italic text-gray-500 -ml-8">
+                        After transfer the payment in above bank <br /> please
+                        attach the receipt below.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                      <div className="flex gap-3 items-center">
+                        <label className="w-[150px]">
+                          <input
+                            type="file"
+                            className="cursor-pointer hidden"
+                          />
+                          <div className="px-3 py-2 sm:px-4 h-[45px] rounded-md cursor-pointer flex items-center justify-center text-gray-700 border border-black">
+                            <img
+                              src={cloudupload}
+                              alt="Upload"
+                              className="w-5 h-5 mr-2"
+                            />
+                            <span className="text-gray-400 font-[400]">Upload File</span>
+                          </div>
+                        </label>
+                        <p className="text-[14px] font-[600]">
+                          Attach transaction slip here
+                        </p>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Enter UTR Number"
+                        className="w-full text-gray-400 font-[400] border border-[--secondary] h-[45px] px-[20px] rounded-md focus:outline-none text-[15px]"
+                      />
                       <button
-                        onClick={() => navigate("/payment-done")}
-                       className="w-full bg-[#FFD814] rounded-md p-2 sm:p-4 font-bold text-sm sm:text-base">
-                        Submit
+                        onClick={() => navigate("/payment-cancel")}
+                        className="w-full bg-[--main] font-[500] text-[15px] h-[45px] text-white rounded-md"
+                      >
+                        Submit Now
                       </button>
                     </div>
                   </div>
@@ -261,7 +233,7 @@ function MainPage() {
           </div>
 
           {/* Right Section (30%) - Order Summary */}
-          <div className="w-full lg:w-[30%] bg-white text-gray-400 font-bold p-4 sm:p-6 ">
+          <div className="w-full lg:w-[30%] bg-white text-gray-400 sm:px-6 lg:pr-0 lg:ps-6 lg:border-l-2 border-l-2-[--secondary]">
             <OrderSummary amount={amount} tax={tax} subtotal={subtotal} />
           </div>
         </main>
