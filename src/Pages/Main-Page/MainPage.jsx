@@ -45,8 +45,8 @@ function MainPage() {
 
   return (
     <Layout>
-      <div className="w-full max-w-[1200px] mx-auto my-[100px] sm:my-[60px] px-4 sm:px-0 md:scale-[0.9]">
-        <main className="flex flex-col-reverse lg:flex-row gap-2">
+      <div className="w-full max-w-[1200px] mx-auto my-[30px] md:my-[100px] sm:my-[60px] px-4 sm:px-0 md:scale-[0.9]">
+        <main className="flex flex-col-reverse lg:flex-row gap-[60px] md:gap-2">
           <div className="w-full lg:w-[70%] max-w-[1000px] bg-white sm:px-6 lg:pe-[40px]">
             <div className="flex flex-col sm:flex-row mb-8 sm:mb-12">
               <div
@@ -80,7 +80,7 @@ function MainPage() {
             </div>
 
             {/* Sidebar & Payment Form Section */}
-            <div className="flex flex-col sm:flex-row min-h-[700px]">
+            <div className="flex flex-col sm:flex-row md:min-h-[700px]">
               {/* Sidebar - Dynamic Content */}
               <div className="w-full sm:w-1/3 bg-[--grayBg] border border-[--secondary] flex flex-col gap-2">
                 {selectedMethod === "UPI" ? (

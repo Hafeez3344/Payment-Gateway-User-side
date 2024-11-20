@@ -11,7 +11,7 @@ function UPIMethod({ selectedUPIMethod = "viaQR" }) {
   }, []);
 
   return (
-    <div className="rounded-tr-md rounded-br-md flex flex-col">
+    <div className="rounded-tr-md rounded-br-md  flex flex-col">
       <div className="flex flex-col items-start">
         {selectedUPIMethod === "viaQR" ? (
           <div>
@@ -50,18 +50,18 @@ function UPIMethod({ selectedUPIMethod = "viaQR" }) {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center sm:items-start">
+          <div className="flex flex-col items-center sm:items-start justify-center w-full">
             <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
               Scan to Pay
             </p>
             <input
               type="text"
               placeholder="Enter UPI ID"
-              className="w-[300px] sm:w-[450px] h-[45px] border px-[20px]  rounded-md focus:outline-none text-[14px]"
+              className="w-[300px] sm:w-[450px] h-[45px] border px-[20px] rounded-md focus:outline-none text-[14px] mb-4"
             />
             <button
               onClick={() => navigate("/waiting-for-upi-approval")}
-              className="w-full sm:w-[450px] bg-[--main] font-[500] mt-4 text-[15px] h-[45px] text-white rounded-md"
+              className="w-[300px] sm:w-[450px] bg-[--main] font-[500] text-[15px] h-[45px] text-white rounded-md"
             >
               Pay Now
             </button>
