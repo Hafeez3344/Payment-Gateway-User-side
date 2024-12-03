@@ -4,11 +4,33 @@ import Qrcode from "../../assets/Qrcode.svg";
 import attention from "../../assets/attention.gif";
 import cloudupload from "../../assets/cloudupload.svg";
 
+import { createWorker } from 'tesseract.js';
+
 function UPIMethod({ selectedUPIMethod = "viaQR" }) {
   const navigate = useNavigate();
   useEffect(() => {
     window.scroll(0, 0);
   }, []);
+
+  const fn_selectImage = async (e) => {
+    const worker = await createWorker('eng');
+    const ret = await worker.recognize(e?.target?.files?.[0]);
+    const paragraphLines = ret?.data?.paragraphs?.[0]?.lines;
+
+    const data = paragraphLines?.filter(text => {
+      const lowerText = text?.text?.toLowerCase();
+      const hasKeyword = ['id', '#'].some(keyword =>
+        lowerText.includes(keyword)
+      );
+      const hasNumber = /\d/.test(text?.text);
+
+      return hasKeyword && hasNumber;
+    }).map(text => text.text);
+
+    console.log(data);
+
+    await worker.terminate();
+  };
 
   return (
     <div className="rounded-tr-md rounded-br-md  flex flex-col">
@@ -73,7 +95,11 @@ function UPIMethod({ selectedUPIMethod = "viaQR" }) {
         <div className="flex flex-col gap-2 sm:gap-4">
           <div className="flex gap-3 items-center">
             <label className="w-[150px]">
-              <input type="file" className="cursor-pointer hidden " />
+              <input
+                type="file"
+                className="cursor-pointer hidden "
+                onChange={(e) => fn_selectImage(e)}
+              />
               <div className="px-3 py-2 sm:px-4 h-[45px] border border-black rounded-md cursor-pointer flex items-center justify-center text-gray-700 ">
                 <img src={cloudupload} alt="Upload" className="w-5 h-5 mr-2" />
                 <span className="text-gray-400 font-[400]">Upload File</span>

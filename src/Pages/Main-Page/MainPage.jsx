@@ -14,14 +14,15 @@ import UCOBank from "../../assets/UCOBank.svg";
 import Qrcode from "../../assets/Qrcode.svg";
 import attention from "../../assets/attention.gif";
 import cloudupload from "../../assets/cloudupload.svg";
+import { fn_getBanksByTabApi } from "../../api/api";
 
 function MainPage() {
   const [selectedMethod, setSelectedMethod] = useState("UPI");
   const [selectedUPIMethod, setSelectedUPIMethod] = useState("viaQR");
-  const [selectedBankMethod, setSelectedBankMethod] =
-    useState("Bank of Baroda");
+  const [selectedBankMethod, setSelectedBankMethod] = useState("Bank of Baroda");
 
   const navigate = useNavigate();
+
   useEffect(() => {
     window.scroll(0, 0);
   }, []);
@@ -42,6 +43,15 @@ function MainPage() {
 
   const { amount, tax, subtotal } = paymentDetails[selectedMethod];
   const selectedBank = bankDetails[selectedBankMethod];
+
+  const fn_getBanks = async(tab) => {
+    const response = await fn_getBanksByTabApi(tab);
+    console.log("response ", response);
+  }
+
+  useEffect(() => {
+    fn_getBanks(selectedMethod.toLowerCase());
+  }, []);
 
   return (
     <Layout>
