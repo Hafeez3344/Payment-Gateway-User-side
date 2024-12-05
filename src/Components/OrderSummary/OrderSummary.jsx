@@ -12,16 +12,16 @@ function OrderSummary({ amount, tax, subtotal }) {
       </div>
       <div className="flex font-[600] justify-between  sm:text-sm  mb-2">
         <span>Tax:</span>
-        <span>16% ({tax})</span>
+        <span>{tax}% ({(amount/100 * tax).toFixed(1)})</span>
       </div>
       <div className="flex font-[600] justify-between  mt-4 sm:text-sm ">
         <span>Sub Total:</span>
-        <span>Rs: {subtotal}</span>
+        <span>Rs: {subtotal.toFixed(1)}</span>
       </div>
       <div className="border-b-2 pt-3 sm:pt-5"></div>
       <div className="flex justify-between  font-bold text-sm sm:text-base text-black mt-4">
         <span>Total:</span>
-        <span className="text-[--main]">Rs: {subtotal}</span>
+        <span className="text-[--main]">Rs:  {subtotal.toFixed(1)}</span>
       </div>
     </div>
   );

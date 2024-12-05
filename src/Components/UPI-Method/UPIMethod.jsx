@@ -1,19 +1,23 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Qrcode from "../../assets/Qrcode.svg";
 import attention from "../../assets/attention.gif";
 import cloudupload from "../../assets/cloudupload.svg";
 
 import { createWorker } from 'tesseract.js';
+import { fn_uploadTransactionApi } from "../../api/api";
+import { ColorRing } from "react-loader-spinner";
 
-function UPIMethod({ selectedUPIMethod = "viaQR" }) {
+function UPIMethod({ selectedUPIMethod = "viaQR", bank, amount, tax, total }) {
   const navigate = useNavigate();
-  useEffect(() => {
-    window.scroll(0, 0);
-  }, []);
+  const [utr, setUtr] = useState('');
+  const [imageLoader, setImageLoader] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const fn_selectImage = async (e) => {
     const worker = await createWorker('eng');
+    setSelectedImage(e?.target?.files?.[0]);
+    setImageLoader(true);
     const ret = await worker.recognize(e?.target?.files?.[0]);
     const paragraphLines = ret?.data?.paragraphs?.[0]?.lines;
 
@@ -28,12 +32,44 @@ function UPIMethod({ selectedUPIMethod = "viaQR" }) {
     }).map(text => text.text);
 
     console.log(data);
-
+    const string = data?.[0];
+    const regex = /\d+/g;
+    const matches = string.match(regex);
+    const longNumbers = matches ? matches.find(num => num.length > 8) : [];
+    console.log(longNumbers);
+    if(longNumbers){
+      setUtr(longNumbers);
+    }
+    setImageLoader(false);
     await worker.terminate();
   };
 
+  const fn_QRsubmit = async () => {
+    if (!selectedImage) return alert("Upload Transaction Slip");
+    if (utr === "") return alert("Enter UTR Number");
+    const formData = new FormData();
+    formData.append('image', selectedImage);
+    formData.append('utr', utr);
+    formData.append('amount', amount);
+    formData.append('tax', tax);
+    formData.append('total', total);
+    formData.append('website', window.location.origin);
+    formData.append('bankId', bank?._id);
+    const response = await fn_uploadTransactionApi(formData);
+    if (response?.status) {
+      if (response?.data?.status === "ok") {
+        alert("Transaction sent for approval");
+      } else {
+        alert(response?.message || "Something Went Wrong");
+      }
+    } else {
+      alert(response?.message || "Something Went Wrong");
+    }
+  }
+
   return (
     <div className="rounded-tr-md rounded-br-md  flex flex-col">
+      {/* first-section */}
       <div className="flex flex-col items-start">
         {selectedUPIMethod === "viaQR" ? (
           <div>
@@ -50,12 +86,12 @@ function UPIMethod({ selectedUPIMethod = "viaQR" }) {
                 <p className="mb-1 flex items-center gap-[4px]">
                   <span className="text-[16px] font-[700]">Scan and Pay</span>{" "}
                   <span className="text-[17px] font-[700] text-[--main] mb-[-2px]">
-                    ₹1160
+                    ₹{total}
                   </span>
                 </p>
                 <p className="text-[15px]">
                   <span className="font-[500]">UPI ID:</span>{" "}
-                  paymentrahul198@upi.com
+                  {bank?.iban}
                 </p>
               </div>
             </div>
@@ -90,7 +126,7 @@ function UPIMethod({ selectedUPIMethod = "viaQR" }) {
           </div>
         )}
       </div>
-
+      {/* second section */}
       {selectedUPIMethod === "viaQR" && (
         <div className="flex flex-col gap-2 sm:gap-4">
           <div className="flex gap-3 items-center">
@@ -106,16 +142,33 @@ function UPIMethod({ selectedUPIMethod = "viaQR" }) {
               </div>
             </label>
             <p className="text-[14px] font-[600]">
-              Attach transaction slip here
+              {!selectedImage ? (
+                <span>Attach transaction slip here</span>
+              ) : (
+                <span>{selectedImage?.name}</span>
+              )}
             </p>
+            {imageLoader && (
+              <ColorRing
+                visible={true}
+                height="45"
+                width="45"
+                ariaLabel="color-ring-loading"
+                wrapperStyle={{}}
+                wrapperClass="color-ring-wrapper"
+                colors={['#000000', '#000000', '#000000', '#000000', '#000000']}
+              />
+            )}
           </div>
           <input
             type="text"
+            value={utr}
+            onChange={(e) => setUtr(e.target.value)}
             placeholder="Enter UTR Number"
-            className="w-full text-gray-400 font-[400] border border-[--secondary] h-[45px] px-[20px] rounded-md focus:outline-none text-[15px]"
+            className="w-full text-gray-800 font-[400] border border-[--secondary] h-[45px] px-[20px] rounded-md focus:outline-none text-[15px]"
           />
           <button
-            onClick={() => navigate("/payment-done")}
+            onClick={fn_QRsubmit}
             className="w-full bg-[--main] font-[500] text-[15px] h-[45px] text-white rounded-md"
           >
             Submit Now

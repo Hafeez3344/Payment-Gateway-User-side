@@ -1,71 +1,113 @@
+import CryptoJS from 'crypto-js';
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+
 import Layout from "../../Layout/Layout";
-import upilogo from "../../assets/upilogo.png";
-import banklogo from "../../assets/banklogo.svg";
+import UPIMethod from "../../Components/UPI-Method/UPIMethod";
+import { BACKEND_URL, fn_getBanksByTabApi } from "../../api/api";
 import OrderSummary from "../../Components/OrderSummary/OrderSummary";
+
 import viaQr from "../../assets/viaQr.svg";
 import arrow from "../../assets/arrow.svg";
-import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
-import UPIMethod from "../../Components/UPI-Method/UPIMethod";
-import CanaraBank from "../../assets/CanaraBank.svg";
-import BankofMaharashtra from "../../assets/BankofMaharashtra.svg";
-import UCOBank from "../../assets/UCOBank.svg";
 import Qrcode from "../../assets/Qrcode.svg";
+import upilogo from "../../assets/upilogo.png";
+import banklogo from "../../assets/banklogo.svg";
 import attention from "../../assets/attention.gif";
 import cloudupload from "../../assets/cloudupload.svg";
-import { fn_getBanksByTabApi } from "../../api/api";
 
 function MainPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [bank, setBank] = useState({});
+  const secretKey = 'payment-gateway-project';
+  const searchParams = new URLSearchParams(location.search);
+  const [oneTimeEncryption, setOneTimeEncryption] = useState(false);
+
   const [selectedMethod, setSelectedMethod] = useState("UPI");
   const [selectedUPIMethod, setSelectedUPIMethod] = useState("viaQR");
-  const [selectedBankMethod, setSelectedBankMethod] = useState("Bank of Baroda");
 
-  const navigate = useNavigate();
+  const [originalTax, setOriginalTax] = useState('');
+  const [originalTotal, setOriginalTotal] = useState('');
+  const [originalAmount, setOriginalAmount] = useState('');
+
+  const decrypt = (encryptedValue) => {
+    try {
+      const bytes = CryptoJS.AES.decrypt(encryptedValue, secretKey);
+      return bytes.toString(CryptoJS.enc.Utf8);
+    } catch (error) {
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const amount = searchParams.get('amount');
+    const tax = searchParams.get('tax');
+    const total = searchParams.get('total');
+
+    const isValidNumber = (value) => /^\d+(\.\d+)?$/.test(value);
+
+    let decryptedAmount = decrypt(amount);
+    let decryptedTax = decrypt(tax);
+    let decryptedTotal = decrypt(total);
+
+    if (!decryptedAmount || !isValidNumber(decryptedAmount)) {
+      decryptedAmount = amount;
+    }
+    if (!decryptedTax || !isValidNumber(decryptedTax)) {
+      decryptedTax = tax;
+    }
+    if (!decryptedTotal || !isValidNumber(decryptedTotal)) {
+      decryptedTotal = total;
+    }
+
+    if (decryptedAmount && decryptedTax && decryptedTotal) {
+      setOriginalAmount(decryptedAmount);
+      setOriginalTax(decryptedTax);
+      setOriginalTotal(decryptedTotal);
+
+      if (!oneTimeEncryption) {
+        const encryptedAmount = CryptoJS.AES.encrypt(decryptedAmount, secretKey).toString();
+        const encryptedTax = CryptoJS.AES.encrypt(decryptedTax, secretKey).toString();
+        const encryptedTotal = CryptoJS.AES.encrypt(decryptedTotal, secretKey).toString();
+
+        const encryptedParams = new URLSearchParams();
+        encryptedParams.set('amount', encryptedAmount);
+        encryptedParams.set('tax', encryptedTax);
+        encryptedParams.set('total', encryptedTotal);
+
+        navigate(`?${encryptedParams.toString()}`, { replace: true });
+        setOneTimeEncryption(true);
+      }
+    }
+  }, [location.search, navigate, oneTimeEncryption, secretKey]);
 
   useEffect(() => {
     window.scroll(0, 0);
-  }, []);
-
-  const paymentDetails = {
-    UPI: { amount: 1000, tax: 160, subtotal: 1160 },
-    Bank: { amount: 950, tax: 140, subtotal: 1090 },
-  };
-
-  const bankDetails = {
-    "Bank of Baroda": {
-      bankName: "Bank of Baroda",
-      accountHolder: "Payment Processor LTD",
-      accountNumber: "2131248903849",
-      iban: "BOB213124890",
-    },
-  };
-
-  const { amount, tax, subtotal } = paymentDetails[selectedMethod];
-  const selectedBank = bankDetails[selectedBankMethod];
-
-  const fn_getBanks = async(tab) => {
-    const response = await fn_getBanksByTabApi(tab);
-    console.log("response ", response);
-  }
-
-  useEffect(() => {
     fn_getBanks(selectedMethod.toLowerCase());
-  }, []);
+  }, [selectedMethod]);
+
+  const fn_getBanks = async (tab) => {
+    const response = await fn_getBanksByTabApi(tab);
+    if (response?.status) {
+      setBank(response?.data?.[0]);
+    } else {
+      setBank({});
+    }
+  };
 
   return (
     <Layout>
       <div className="w-full max-w-[1200px] mx-auto my-[30px] md:my-[100px] sm:my-[60px] px-4 sm:px-0 md:scale-[0.9]">
         <main className="flex flex-col-reverse lg:flex-row gap-[60px] md:gap-2">
           <div className="w-full lg:w-[70%] max-w-[1000px] bg-white sm:px-6 lg:pe-[40px]">
+            {/* tabs */}
             <div className="flex flex-col sm:flex-row mb-8 sm:mb-12">
               <div
                 onClick={() => setSelectedMethod("UPI")}
-                className={`w-full sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${
-                  selectedMethod === "UPI"
-                    ? "outline outline-[2px] outline-[--main]"
-                    : "outline outline-[1px] outline-r-0 outline-[--secondary]"
-                } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
+                className={`w-full sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${selectedMethod === "UPI"
+                  ? "outline outline-[2px] outline-[--main]"
+                  : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+                  } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
               >
                 <img
                   src={upilogo}
@@ -75,11 +117,10 @@ function MainPage() {
               </div>
               <div
                 onClick={() => setSelectedMethod("Bank")}
-                className={`w-full sm:w-1/2 p-3 sm:p-4 ${
-                  selectedMethod === "Bank"
-                    ? "outline outline-[2px] outline-[--main]"
-                    : "outline outline-[1px] outline-r-0 outline-[--secondary]"
-                } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
+                className={`w-full sm:w-1/2 p-3 sm:p-4 ${selectedMethod === "Bank"
+                  ? "outline outline-[2px] outline-[--main]"
+                  : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+                  } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
               >
                 <img
                   src={banklogo}
@@ -89,19 +130,17 @@ function MainPage() {
               </div>
             </div>
 
-            {/* Sidebar & Payment Form Section */}
             <div className="flex flex-col sm:flex-row md:min-h-[700px]">
-              {/* Sidebar - Dynamic Content */}
+              {/* Sidebar */}
               <div className="w-full sm:w-1/3 bg-[--grayBg] border border-[--secondary] flex flex-col gap-2">
                 {selectedMethod === "UPI" ? (
                   <div>
                     <div
                       onClick={() => setSelectedUPIMethod("viaQR")}
-                      className={`p-2 border-l-[6px] flex items-center gap-2 cursor-pointer ${
-                        selectedUPIMethod === "viaQR"
-                          ? "bg-white border-[--main] text-black"
-                          : "bg-[--grayBg] border-[gray-900] text-gray-700"
-                      }`}
+                      className={`p-2 border-l-[6px] flex items-center gap-2 cursor-pointer ${selectedUPIMethod === "viaQR"
+                        ? "bg-white border-[--main] text-black"
+                        : "bg-[--grayBg] border-[gray-900] text-gray-700"
+                        }`}
                     >
                       <img src={viaQr} alt="Via QR" className="w-8 h-8" />
                       <p className="font-bold text-[19px]">UPI</p>
@@ -111,11 +150,10 @@ function MainPage() {
                     <div className="border-t-2 border-b-2 border-gray-300">
                       <div
                         onClick={() => setSelectedUPIMethod("viaApp")}
-                        className={`p-2  border-l-[6px] flex  gap-2 cursor-pointer ${
-                          selectedUPIMethod === "viaApp"
-                            ? "bg-white border-[--main] "
-                            : "bg-[--grayBg] border-[gray-900]"
-                        }`}
+                        className={`p-2  border-l-[6px] flex  gap-2 cursor-pointer ${selectedUPIMethod === "viaApp"
+                          ? "bg-white border-[--main] "
+                          : "bg-[--grayBg] border-[gray-900]"
+                          }`}
                       >
                         <img src={arrow} alt="Arrow" className="w-8 h-8" />
                         <p className="font-bold text-[19px]">UPI</p>
@@ -127,19 +165,15 @@ function MainPage() {
                   <div>
                     <div
                       onClick={() => setSelectedBankMethod("Bank of Baroda")}
-                      className={`  border-l-[6px] flex gap-1 cursor-pointer ${
-                        selectedBankMethod === "Bank of Baroda"
-                          ? "bg-white border-l-[6px] border-l-[--bred] text-black border-b-2 border-gray-300"
-                          : "bg-gray-500 border-l-[6px] border-l-[--bred] text-gray-700 "
-                      }`}
+                      className={`flex gap-1 cursor-pointer bg-white border-l-[6px] border-l-[--bred] text-black border-b-2 border-gray-300`}
                     >
                       <img
                         className="w-12 h-12 ml-1"
-                        src={BankOfBarodaLogo}
+                        src={`${BACKEND_URL}/${bank?.image}`}
                         alt="Bank of Baroda logo"
                       />
                       <p className=" text-[19px] font-[700] pt-2">
-                        Bank of Baroda
+                        {bank?.bankName}
                       </p>
                     </div>
                   </div>
@@ -149,7 +183,7 @@ function MainPage() {
               {/* Payment Form Section */}
               <div className="w-full sm:w-2/3 border rounded-r-[10px] px-[1.7rem] py-[1.3rem]">
                 {selectedMethod === "UPI" ? (
-                  <UPIMethod selectedUPIMethod={selectedUPIMethod} />
+                  <UPIMethod selectedUPIMethod={selectedUPIMethod} bank={bank} amount={originalAmount} tax={originalTax} total={originalTotal} />
                 ) : (
                   <div className="rounded-tr-md rounded-br-md flex flex-col">
                     <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
@@ -166,28 +200,28 @@ function MainPage() {
                           Bank Name:
                         </span>
                         <span className="text-[16px]">
-                          {selectedBank.bankName}
+                          {bank?.bankName}
                         </span>
 
                         <span className="text-[16px] font-[700] text-gray-700">
                           Account Holder Name:
                         </span>
                         <span className="text-[16px]">
-                          {selectedBank.accountHolder}
+                          {bank?.accountHolderName}
                         </span>
 
                         <span className="text-[16px] font-[700] text-gray-700">
                           Account Number:
                         </span>
                         <span className="text-[16px]">
-                          {selectedBank.accountNumber}
+                          {bank?.accountNo}
                         </span>
 
                         <span className="text-[16px] font-[700] text-gray-700">
                           IBAN:
                         </span>
                         <span className="text-[16px] break-words">
-                          {selectedBank.iban}
+                          {bank?.iban}
                         </span>
                       </div>
                     </div>
@@ -244,12 +278,12 @@ function MainPage() {
 
           {/* Right Section (30%) - Order Summary */}
           <div className="w-full lg:w-[30%] bg-white text-gray-400 sm:px-6 lg:pr-0 lg:ps-6 lg:border-l-2 border-l-2-[--secondary]">
-            <OrderSummary amount={amount} tax={tax} subtotal={subtotal} />
+            <OrderSummary amount={parseFloat(originalAmount)} tax={parseFloat(originalTax)} subtotal={parseFloat(originalTotal)} />
           </div>
         </main>
       </div>
     </Layout>
-  );
+  )
 }
 
 export default MainPage;
