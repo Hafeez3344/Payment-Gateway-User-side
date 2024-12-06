@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Qrcode from "../../assets/Qrcode.svg";
+import { useNavigate } from "react-router-dom";
+import { ColorRing } from "react-loader-spinner";
 import attention from "../../assets/attention.gif";
 import cloudupload from "../../assets/cloudupload.svg";
 
 import { createWorker } from 'tesseract.js';
 import { fn_uploadTransactionApi } from "../../api/api";
-import { ColorRing } from "react-loader-spinner";
 
-function UPIMethod({ selectedUPIMethod = "viaQR", bank, amount, tax, total }) {
+function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount, tax, total }) {
   const navigate = useNavigate();
   const [utr, setUtr] = useState('');
   const [imageLoader, setImageLoader] = useState(false);
@@ -58,7 +58,10 @@ function UPIMethod({ selectedUPIMethod = "viaQR", bank, amount, tax, total }) {
     const response = await fn_uploadTransactionApi(formData);
     if (response?.status) {
       if (response?.data?.status === "ok") {
-        alert("Transaction sent for approval");
+        setUtr('');
+        setSelectedImage({});
+        setTransactionId(response?.data?.data?._id);
+        navigate("/payment-done");
       } else {
         alert(response?.message || "Something Went Wrong");
       }

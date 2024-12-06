@@ -1,11 +1,13 @@
 import CryptoJS from 'crypto-js';
+import { createWorker } from 'tesseract.js';
+import { ColorRing } from "react-loader-spinner";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import Layout from "../../Layout/Layout";
 import UPIMethod from "../../Components/UPI-Method/UPIMethod";
-import { BACKEND_URL, fn_getBanksByTabApi } from "../../api/api";
 import OrderSummary from "../../Components/OrderSummary/OrderSummary";
+import { BACKEND_URL, fn_getBanksByTabApi, fn_uploadTransactionApi } from "../../api/api";
 
 import viaQr from "../../assets/viaQr.svg";
 import arrow from "../../assets/arrow.svg";
@@ -15,7 +17,7 @@ import banklogo from "../../assets/banklogo.svg";
 import attention from "../../assets/attention.gif";
 import cloudupload from "../../assets/cloudupload.svg";
 
-function MainPage() {
+function MainPage({setTransactionId}) {
   const navigate = useNavigate();
   const location = useLocation();
   const [bank, setBank] = useState({});
@@ -29,6 +31,10 @@ function MainPage() {
   const [originalTax, setOriginalTax] = useState('');
   const [originalTotal, setOriginalTotal] = useState('');
   const [originalAmount, setOriginalAmount] = useState('');
+
+  const [utr, setUtr] = useState('');
+  const [imageLoader, setImageLoader] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const decrypt = (encryptedValue) => {
     try {
@@ -92,6 +98,62 @@ function MainPage() {
       setBank(response?.data?.[0]);
     } else {
       setBank({});
+    }
+  };
+
+  const fn_selectImage = async (e) => {
+    const worker = await createWorker('eng');
+    setSelectedImage(e?.target?.files?.[0]);
+    setImageLoader(true);
+    const ret = await worker.recognize(e?.target?.files?.[0]);
+    const paragraphLines = ret?.data?.paragraphs?.[0]?.lines;
+
+    const data = paragraphLines?.filter(text => {
+      const lowerText = text?.text?.toLowerCase();
+      const hasKeyword = ['id', '#'].some(keyword =>
+        lowerText.includes(keyword)
+      );
+      const hasNumber = /\d/.test(text?.text);
+
+      return hasKeyword && hasNumber;
+    }).map(text => text.text);
+
+    console.log(data);
+    const string = data?.[0];
+    const regex = /\d+/g;
+    const matches = string.match(regex);
+    const longNumbers = matches ? matches.find(num => num.length > 8) : [];
+    console.log(longNumbers);
+    if (longNumbers) {
+      setUtr(longNumbers);
+    }
+    setImageLoader(false);
+    await worker.terminate();
+  };
+
+  const fn_Banksubmit = async () => {
+    if (!selectedImage) return alert("Upload Transaction Slip");
+    if (utr === "") return alert("Enter UTR Number");
+    const formData = new FormData();
+    formData.append('image', selectedImage);
+    formData.append('utr', utr);
+    formData.append('amount', originalAmount);
+    formData.append('tax', originalTax);
+    formData.append('total', originalTotal);
+    formData.append('website', window.location.origin);
+    formData.append('bankId', bank?._id);
+    const response = await fn_uploadTransactionApi(formData);
+    if (response?.status) {
+      if (response?.data?.status === "ok") {
+        setUtr('');
+        setSelectedImage({});
+        setTransactionId(response?.data?.data?._id)
+        navigate("/payment-done");
+      } else {
+        alert(response?.message || "Something Went Wrong");
+      }
+    } else {
+      alert(response?.message || "Something Went Wrong");
     }
   };
 
@@ -183,7 +245,7 @@ function MainPage() {
               {/* Payment Form Section */}
               <div className="w-full sm:w-2/3 border rounded-r-[10px] px-[1.7rem] py-[1.3rem]">
                 {selectedMethod === "UPI" ? (
-                  <UPIMethod selectedUPIMethod={selectedUPIMethod} bank={bank} amount={originalAmount} tax={originalTax} total={originalTotal} />
+                  <UPIMethod setTransactionId={setTransactionId} selectedUPIMethod={selectedUPIMethod} bank={bank} amount={originalAmount} tax={originalTax} total={originalTotal} />
                 ) : (
                   <div className="rounded-tr-md rounded-br-md flex flex-col">
                     <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
@@ -244,6 +306,7 @@ function MainPage() {
                           <input
                             type="file"
                             className="cursor-pointer hidden"
+                            onChange={(e) => fn_selectImage(e)}
                           />
                           <div className="px-3 py-2 sm:px-4 h-[45px] rounded-md cursor-pointer flex items-center justify-center text-gray-700 border border-black">
                             <img
@@ -255,16 +318,33 @@ function MainPage() {
                           </div>
                         </label>
                         <p className="text-[14px] font-[600]">
-                          Attach transaction slip here
+                          {!selectedImage ? (
+                            <span>Attach transaction slip here</span>
+                          ) : (
+                            <span>{selectedImage?.name}</span>
+                          )}
                         </p>
+                        {imageLoader && (
+                          <ColorRing
+                            visible={true}
+                            height="45"
+                            width="45"
+                            ariaLabel="color-ring-loading"
+                            wrapperStyle={{}}
+                            wrapperClass="color-ring-wrapper"
+                            colors={['#000000', '#000000', '#000000', '#000000', '#000000']}
+                          />
+                        )}
                       </div>
                       <input
                         type="text"
+                        value={utr}
+                        onChange={(e) => setUtr(e.target.value)}
                         placeholder="Enter UTR Number"
-                        className="w-full text-gray-400 font-[400] border border-[--secondary] h-[45px] px-[20px] rounded-md focus:outline-none text-[15px]"
+                        className="w-full text-gray-800 font-[400] border border-[--secondary] h-[45px] px-[20px] rounded-md focus:outline-none text-[15px]"
                       />
                       <button
-                        onClick={() => navigate("/payment-cancel")}
+                        onClick={fn_Banksubmit}
                         className="w-full bg-[--main] font-[500] text-[15px] h-[45px] text-white rounded-md"
                       >
                         Submit Now

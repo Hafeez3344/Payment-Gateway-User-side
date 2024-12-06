@@ -3,7 +3,7 @@ import Header from "../../Components/Header/Header";
 import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
 import Footer from "../../Components/Footer/Footer";
 
-const PaymentDone = () => {
+const PaymentDone = ({transactionId}) => {
   const containerHeight = window.innerHeight - 66 - 48;
   useEffect(() => {
     window.scroll(0, 0);
@@ -28,7 +28,7 @@ const PaymentDone = () => {
             PAYMENT REQUEST SUBMITTED
           </h1>
           <p className="text-md sm:text-lg mb-4 font-roboto">
-            Transaction No: 92474624013
+            Transaction No: {transactionId}
           </p>
 
           <p className="text-gray-500 mb-4 text-[14px] font-[600] sm:text-[16px]">
