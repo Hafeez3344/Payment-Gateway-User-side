@@ -17,7 +17,7 @@ function App() {
         <Route path="/" element={<MainPage setTransactionId={setTransactionId} />} />
         <Route path="/payment-done" element={<PaymentDone transactionId={transactionId} />} />
         <Route path="/payment-cancel" element={<PaymentCancel />} />
-        <Route path="/waiting-for-upi-approval" element={<WaitingforUPIApproval/>} />
+        <Route path="/waiting-for-upi-approval" element={<WaitingforUPIApproval />} />
       </Routes>
     </>
   );
