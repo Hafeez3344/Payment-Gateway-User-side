@@ -34,6 +34,7 @@ function MainPage({ setTransactionId }) {
   const [originalAmount, setOriginalAmount] = useState('');
 
   const [utr, setUtr] = useState('');
+  const [checkBox, setCheckBox] = useState(false);
   const [imageLoader, setImageLoader] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -90,6 +91,7 @@ function MainPage({ setTransactionId }) {
 
   useEffect(() => {
     window.scroll(0, 0);
+    setCheckBox(false);
     fn_getBanks(selectedMethod.toLowerCase());
   }, [selectedMethod]);
 
@@ -135,6 +137,7 @@ function MainPage({ setTransactionId }) {
   const fn_Banksubmit = async () => {
     if (!selectedImage) return alert("Upload Transaction Slip");
     if (utr === "") return alert("Enter UTR Number");
+    if (!checkBox) return alert("Verify the Uploaded Receipt Checkbox");
     const formData = new FormData();
     formData.append('image', selectedImage);
     formData.append('utr', utr);
@@ -344,6 +347,10 @@ function MainPage({ setTransactionId }) {
                           placeholder="Enter UTR Number"
                           className="w-full text-gray-800 font-[400] border border-[--secondary] h-[45px] px-[20px] rounded-md focus:outline-none text-[15px]"
                         />
+                        <div className="flex items-center gap-[7px]">
+                          <input type="checkbox" id="check-box" onChange={(e) => setCheckBox(e.target.checked)} />
+                          <label htmlFor="check-box" className="text-[14px] font-[500] cursor-pointer">This is autofill UTR from Your Uploaded Receipt, verify it.</label>
+                        </div>
                         <button
                           onClick={fn_Banksubmit}
                           className="w-full bg-[--main] font-[500] text-[15px] h-[45px] text-white rounded-md"

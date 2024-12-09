@@ -13,6 +13,7 @@ function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount
   const [utr, setUtr] = useState('');
   const [imageLoader, setImageLoader] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [checkBox, setCheckBox] = useState(false);
 
   const fn_selectImage = async (e) => {
     const worker = await createWorker('eng');
@@ -43,6 +44,7 @@ function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount
   const fn_QRsubmit = async () => {
     if (!selectedImage) return alert("Upload Transaction Slip");
     if (utr === "") return alert("Enter UTR Number");
+    if(!checkBox) return alert("Verify the Uploaded Receipt Checkbox");
     const formData = new FormData();
     formData.append('image', selectedImage);
     formData.append('utr', utr);
@@ -166,6 +168,10 @@ function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount
             placeholder="Enter UTR Number"
             className="w-full text-gray-800 font-[400] border border-[--secondary] h-[45px] px-[20px] rounded-md focus:outline-none text-[15px]"
           />
+          <div className="flex items-center gap-[7px]">
+            <input type="checkbox" id="check-box" onChange={(e) => setCheckBox(e.target.checked)} />
+            <label htmlFor="check-box" className="text-[14px] font-[500] cursor-pointer">This is autofill UTR from Your Uploaded Receipt, verify it.</label>
+          </div>
           <button
             onClick={fn_QRsubmit}
             className="w-full bg-[--main] font-[500] text-[15px] h-[45px] text-white rounded-md"
