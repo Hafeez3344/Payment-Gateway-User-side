@@ -12,11 +12,11 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<MainPage setTransactionId={setTransactionId} />} />
+        <Route path="/" element={<Information />} />
+        <Route path="/payment" element={<MainPage setTransactionId={setTransactionId} />} />
         <Route path="/payment-done" element={<PaymentDone transactionId={transactionId} />} />
         <Route path="/payment-cancel" element={<PaymentCancel />} />
         <Route path="/waiting-for-upi-approval" element={<WaitingforUPIApproval />} />
-        <Route path="/information" element={<Information />} />
       </Routes>
     </>
   );

@@ -1,6 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Information = () => {
+  const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [amount, setAmount] = useState("");
+  const [tax, setTax] = useState("0");
+  const [total, setTotal] = useState("");
+  const fn_submit = (e) => {
+    e.preventDefault();
+    console.log("username ", username);
+    console.log("amount ", amount);
+    console.log("tax ", tax);
+    console.log("total ", total);
+    navigate(`/payment?amount=${amount}&tax=${tax}&total=${total}`);
+  }
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg max-w-md shadow-md">
@@ -12,7 +26,7 @@ const Information = () => {
             Please fill in the details below to submit your information.
           </p>
         </div>
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={fn_submit}>
           <div>
             <label
               htmlFor="username"
@@ -22,6 +36,8 @@ const Information = () => {
             </label>
             <input
               type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               name="username"
               placeholder="Username"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -36,7 +52,11 @@ const Information = () => {
               Amount:
             </label>
             <input
-              type="text"
+              type="number"
+              step="0.01"
+              min={1}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
               name="amount"
               placeholder="Amount"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -51,7 +71,11 @@ const Information = () => {
               Tax:
             </label>
             <input
-              type="text"
+              type="number"
+              disabled
+              step="0.01"
+              value={tax}
+              onChange={(e) => setTax(e.target.value)}
               name="tax"
               placeholder="Tax"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -66,8 +90,12 @@ const Information = () => {
               Total:
             </label>
             <input
-              type="text"
+              type="number"
               name="total"
+              value={total}
+              min={1}
+              step={"0.01"}
+              onChange={(e) => setTotal(e.target.value)}
               placeholder="Total"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               required

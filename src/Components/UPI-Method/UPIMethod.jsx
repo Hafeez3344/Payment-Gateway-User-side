@@ -20,27 +20,23 @@ function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount
     setImageLoader(true);
     const ret = await worker.recognize(e?.target?.files?.[0]);
     const paragraphLines = ret?.data?.paragraphs?.[0]?.lines;
-
+    console.log(paragraphLines)
     const data = paragraphLines?.filter(text => {
       const lowerText = text?.text?.toLowerCase();
-      const hasKeyword = ['id', '#'].some(keyword =>
+      const hasKeyword = ['id'].some(keyword =>
         lowerText.includes(keyword)
       );
       const hasNumber = /\d/.test(text?.text);
-
       return hasKeyword && hasNumber;
     }).map(text => text.text);
-
-    console.log(data);
+    setImageLoader(false);
     const string = data?.[0];
     const regex = /\d+/g;
     const matches = string.match(regex);
     const longNumbers = matches ? matches.find(num => num.length > 8) : [];
-    console.log(longNumbers);
-    if(longNumbers){
+    if (longNumbers) {
       setUtr(longNumbers);
     }
-    setImageLoader(false);
     await worker.terminate();
   };
 

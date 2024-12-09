@@ -118,7 +118,7 @@ function MainPage({ setTransactionId }) {
 
       return hasKeyword && hasNumber;
     }).map(text => text.text);
-
+    setImageLoader(false);
     console.log(data);
     const string = data?.[0];
     const regex = /\d+/g;
