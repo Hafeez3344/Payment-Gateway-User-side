@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const BACKEND_URL = "http://192.168.1.9:8888"
+export const BACKEND_URL = "http://localhost:8888"
 
 export const fn_getBanksByTabApi = async (tab) => {
     try {

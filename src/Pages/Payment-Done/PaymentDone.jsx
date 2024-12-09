@@ -2,8 +2,10 @@ import React, { useEffect } from "react";
 import Header from "../../Components/Header/Header";
 import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
 import Footer from "../../Components/Footer/Footer";
+import { useNavigate } from "react-router-dom";
 
-const PaymentDone = ({transactionId}) => {
+const PaymentDone = ({ transactionId }) => {
+  const navigate = useNavigate();
   const containerHeight = window.innerHeight - 66 - 48;
   useEffect(() => {
     window.scroll(0, 0);
@@ -12,7 +14,7 @@ const PaymentDone = ({transactionId}) => {
   return (
     <>
       <Header />
-      <div className="relative flex flex-col items-center justify-center px-4" style={{minHeight: `${containerHeight}px`}}>
+      <div className="relative flex flex-col items-center justify-center px-4" style={{ minHeight: `${containerHeight}px` }}>
         <div className="w-full max-w-4xl p-5 text-center rounded-lg">
           <div className="flex justify-center mb-4 mt-[-20px]">
             <div>
@@ -37,7 +39,7 @@ const PaymentDone = ({transactionId}) => {
             to your wallet.
           </p>
 
-          <button className="w-3/4 md:w-1/4 bg-[--main] font-[500] mt-3 text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none">
+          <button onClick={() => navigate("/")} className="w-3/4 md:w-1/4 bg-[--main] font-[500] mt-3 text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none">
             Return to App
           </button>
         </div>
