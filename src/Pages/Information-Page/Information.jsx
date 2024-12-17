@@ -5,15 +5,9 @@ const Information = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [amount, setAmount] = useState("");
-  const [tax, setTax] = useState("0");
-  const [total, setTotal] = useState("");
   const fn_submit = (e) => {
     e.preventDefault();
-    console.log("username ", username);
-    console.log("amount ", amount);
-    console.log("tax ", tax);
-    console.log("total ", total);
-    navigate(`/payment?amount=${amount}&tax=${tax}&total=${total}`);
+    navigate(`/payment?username=${username}&amount=${amount}`);
   }
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -59,44 +53,6 @@ const Information = () => {
               onChange={(e) => setAmount(e.target.value)}
               name="amount"
               placeholder="Amount"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              required
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="tax"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Tax:
-            </label>
-            <input
-              type="number"
-              disabled
-              step="0.01"
-              value={tax}
-              onChange={(e) => setTax(e.target.value)}
-              name="tax"
-              placeholder="Tax"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              required
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="total"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Total:
-            </label>
-            <input
-              type="number"
-              name="total"
-              value={total}
-              min={1}
-              step={"0.01"}
-              onChange={(e) => setTotal(e.target.value)}
-              placeholder="Total"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               required
             />

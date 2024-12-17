@@ -35,3 +35,21 @@ export const fn_uploadTransactionApi = async (formData) => {
         return { status: false, message: "Network error" };
     }
 }
+
+export const fn_getWebInfoApi = async () => {
+    try {
+        const website = window.location.origin;
+        const response = await axios.post(`${BACKEND_URL}/merchant/web-info`, { website });
+        if (response?.status === 200) {
+            if (response?.data?.status === "ok") {
+                return { status: true, data: response?.data?.data }
+            }
+        }
+    } catch (error) {
+        console.log("fn_getBanksByTabApi ", error);
+        if (error?.status === 400) {
+            return { status: false, message: error?.response?.data?.message || "Something went wrong" }
+        }
+        return { status: false, message: "Network error" };
+    }
+}

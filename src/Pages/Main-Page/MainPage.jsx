@@ -7,7 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "../../Layout/Layout";
 import UPIMethod from "../../Components/UPI-Method/UPIMethod";
 import OrderSummary from "../../Components/OrderSummary/OrderSummary";
-import { BACKEND_URL, fn_getBanksByTabApi, fn_uploadTransactionApi } from "../../api/api";
+import { BACKEND_URL, fn_getBanksByTabApi, fn_getWebInfoApi, fn_uploadTransactionApi } from "../../api/api";
 
 import viaQr from "../../assets/viaQr.svg";
 import arrow from "../../assets/arrow.svg";
@@ -25,6 +25,7 @@ function MainPage({ setTransactionId }) {
   const secretKey = 'payment-gateway-project';
   const searchParams = new URLSearchParams(location.search);
   const [oneTimeEncryption, setOneTimeEncryption] = useState(false);
+  const [webInfo, setWebInfo] = useState({});
 
   const [selectedMethod, setSelectedMethod] = useState("UPI");
   const [selectedUPIMethod, setSelectedUPIMethod] = useState("viaQR");
@@ -32,6 +33,7 @@ function MainPage({ setTransactionId }) {
   const [originalTax, setOriginalTax] = useState('');
   const [originalTotal, setOriginalTotal] = useState('');
   const [originalAmount, setOriginalAmount] = useState('');
+  const [originalUsername, setOriginalUsername] = useState('');
 
   const [utr, setUtr] = useState('');
   const [checkBox, setCheckBox] = useState(false);
@@ -49,39 +51,27 @@ function MainPage({ setTransactionId }) {
 
   useEffect(() => {
     const amount = searchParams.get('amount');
-    const tax = searchParams.get('tax');
-    const total = searchParams.get('total');
+    const username = searchParams.get('username');
+    console.log("username ", username);
 
     const isValidNumber = (value) => /^\d+(\.\d+)?$/.test(value);
 
     let decryptedAmount = decrypt(amount);
-    let decryptedTax = decrypt(tax);
-    let decryptedTotal = decrypt(total);
 
     if (!decryptedAmount || !isValidNumber(decryptedAmount)) {
       decryptedAmount = amount;
     }
-    if (!decryptedTax || !isValidNumber(decryptedTax)) {
-      decryptedTax = tax;
-    }
-    if (!decryptedTotal || !isValidNumber(decryptedTotal)) {
-      decryptedTotal = total;
-    }
 
-    if (decryptedAmount && decryptedTax && decryptedTotal) {
+    if (decryptedAmount) {
       setOriginalAmount(decryptedAmount);
-      setOriginalTax(decryptedTax);
-      setOriginalTotal(decryptedTotal);
+      setOriginalUsername(username);
 
       if (!oneTimeEncryption) {
         const encryptedAmount = CryptoJS.AES.encrypt(decryptedAmount, secretKey).toString();
-        const encryptedTax = CryptoJS.AES.encrypt(decryptedTax, secretKey).toString();
-        const encryptedTotal = CryptoJS.AES.encrypt(decryptedTotal, secretKey).toString();
 
         const encryptedParams = new URLSearchParams();
         encryptedParams.set('amount', encryptedAmount);
-        encryptedParams.set('tax', encryptedTax);
-        encryptedParams.set('total', encryptedTotal);
+        encryptedParams.set('username', username);
 
         navigate(`?${encryptedParams.toString()}`, { replace: true });
         setOneTimeEncryption(true);
@@ -93,12 +83,22 @@ function MainPage({ setTransactionId }) {
     window.scroll(0, 0);
     setCheckBox(false);
     fn_getBanks(selectedMethod.toLowerCase());
+    fn_getWebInfo();
   }, [selectedMethod]);
 
   const fn_getBanks = async (tab) => {
     const response = await fn_getBanksByTabApi(tab);
     if (response?.status) {
       setBank(response?.data?.[0] || {});
+    } else {
+      setBank({});
+    }
+  };
+
+  const fn_getWebInfo = async () => {
+    const response = await fn_getWebInfoApi();
+    if (response?.status) {
+      setWebInfo(response?.data || {});
     } else {
       setBank({});
     }
@@ -121,7 +121,6 @@ function MainPage({ setTransactionId }) {
       return hasKeyword && hasNumber;
     }).map(text => text.text);
     setImageLoader(false);
-    console.log(data);
     const string = data?.[0];
     const regex = /\d+/g;
     const matches = string.match(regex);
@@ -142,8 +141,8 @@ function MainPage({ setTransactionId }) {
     formData.append('image', selectedImage);
     formData.append('utr', utr);
     formData.append('amount', originalAmount);
-    formData.append('tax', originalTax);
-    formData.append('total', originalTotal);
+    formData.append('tax', webInfo?.tax || 0);
+    formData.append('total', (originalAmount/100 * (webInfo?.tax || 0) + parseFloat(originalAmount)).toFixed(1));
     formData.append('website', window.location.origin);
     formData.append('bankId', bank?._id);
     const response = await fn_uploadTransactionApi(formData);
@@ -151,7 +150,7 @@ function MainPage({ setTransactionId }) {
       if (response?.data?.status === "ok") {
         setUtr('');
         setSelectedImage({});
-        setTransactionId(response?.data?.data?._id)
+        setTransactionId(response?.data?.data?.trnNo)
         navigate("/payment-done");
       } else {
         alert(response?.message || "Something Went Wrong");
@@ -249,7 +248,7 @@ function MainPage({ setTransactionId }) {
                 {/* Payment Form Section */}
                 <div className="w-full sm:w-2/3 border rounded-r-[10px] px-[1.7rem] py-[1.3rem]">
                   {selectedMethod === "UPI" ? (
-                    <UPIMethod setTransactionId={setTransactionId} selectedUPIMethod={selectedUPIMethod} bank={bank} amount={originalAmount} tax={originalTax} total={originalTotal} />
+                    <UPIMethod setTransactionId={setTransactionId} selectedUPIMethod={selectedUPIMethod} bank={bank} amount={originalAmount} tax={webInfo?.tax || 0} total={(originalAmount/100 * (webInfo?.tax || 0) + parseFloat(originalAmount)).toFixed(1)} />
                   ) : (
                     <div className="rounded-tr-md rounded-br-md flex flex-col">
                       <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
@@ -371,7 +370,7 @@ function MainPage({ setTransactionId }) {
 
           {/* Right Section (30%) - Order Summary */}
           <div className="w-full lg:w-[30%] bg-white text-gray-400 sm:px-6 lg:pr-0 lg:ps-6 lg:border-l-2 border-l-2-[--secondary]">
-            <OrderSummary amount={parseFloat(originalAmount)} tax={parseFloat(originalTax)} subtotal={parseFloat(originalTotal)} />
+            <OrderSummary amount={parseFloat(originalAmount)} tax={parseFloat(originalTax)} subtotal={parseFloat(originalTotal)} webInfo={webInfo} />
           </div>
         </main>
       </div>

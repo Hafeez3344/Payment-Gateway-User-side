@@ -58,7 +58,7 @@ function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount
       if (response?.data?.status === "ok") {
         setUtr('');
         setSelectedImage({});
-        setTransactionId(response?.data?.data?._id);
+        setTransactionId(response?.data?.data?.trnNo)
         navigate("/payment-done");
       } else {
         alert(response?.message || "Something Went Wrong");
