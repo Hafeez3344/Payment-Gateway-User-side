@@ -1,5 +1,5 @@
-import CryptoJS from 'crypto-js';
-import { createWorker } from 'tesseract.js';
+import CryptoJS from "crypto-js";
+import { createWorker } from "tesseract.js";
 import { ColorRing } from "react-loader-spinner";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -7,7 +7,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "../../Layout/Layout";
 import UPIMethod from "../../Components/UPI-Method/UPIMethod";
 import OrderSummary from "../../Components/OrderSummary/OrderSummary";
-import { BACKEND_URL, fn_getBanksByTabApi, fn_getWebInfoApi, fn_uploadTransactionApi } from "../../api/api";
+import {
+  BACKEND_URL,
+  fn_getBanksByTabApi,
+  fn_getWebInfoApi,
+  fn_uploadTransactionApi,
+} from "../../api/api";
+import { Banks } from "../../json-data/banks";
 
 import viaQr from "../../assets/viaQr.svg";
 import arrow from "../../assets/arrow.svg";
@@ -16,13 +22,13 @@ import upilogo from "../../assets/upilogo.png";
 import banklogo from "../../assets/banklogo.svg";
 import attention from "../../assets/attention.gif";
 import cloudupload from "../../assets/cloudupload.svg";
-import { FaExclamationCircle } from 'react-icons/fa';
+import { FaExclamationCircle } from "react-icons/fa";
 
 function MainPage({ setTransactionId }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [bank, setBank] = useState({});
-  const secretKey = 'payment-gateway-project';
+  const secretKey = "payment-gateway-project";
   const searchParams = new URLSearchParams(location.search);
   const [oneTimeEncryption, setOneTimeEncryption] = useState(false);
   const [webInfo, setWebInfo] = useState({});
@@ -30,15 +36,16 @@ function MainPage({ setTransactionId }) {
   const [selectedMethod, setSelectedMethod] = useState("UPI");
   const [selectedUPIMethod, setSelectedUPIMethod] = useState("viaQR");
 
-  const [originalTax, setOriginalTax] = useState('');
-  const [originalTotal, setOriginalTotal] = useState('');
-  const [originalAmount, setOriginalAmount] = useState('');
-  const [originalUsername, setOriginalUsername] = useState('');
+  const [originalTax, setOriginalTax] = useState("");
+  const [originalTotal, setOriginalTotal] = useState("");
+  const [originalAmount, setOriginalAmount] = useState("");
+  const [originalUsername, setOriginalUsername] = useState("");
 
-  const [utr, setUtr] = useState('');
+  const [utr, setUtr] = useState("");
   const [checkBox, setCheckBox] = useState(false);
   const [imageLoader, setImageLoader] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [processingError, setProcessingError] = useState("");
 
   const decrypt = (encryptedValue) => {
     try {
@@ -50,12 +57,10 @@ function MainPage({ setTransactionId }) {
   };
 
   useEffect(() => {
-    const amount = searchParams.get('amount');
-    const username = searchParams.get('username');
-    console.log("username ", username);
+    const amount = searchParams.get("amount");
+    const username = searchParams.get("username");
 
     const isValidNumber = (value) => /^\d+(\.\d+)?$/.test(value);
-
     let decryptedAmount = decrypt(amount);
 
     if (!decryptedAmount || !isValidNumber(decryptedAmount)) {
@@ -67,17 +72,18 @@ function MainPage({ setTransactionId }) {
       setOriginalUsername(username);
 
       if (!oneTimeEncryption) {
-        const encryptedAmount = CryptoJS.AES.encrypt(decryptedAmount, secretKey).toString();
-
+        const encryptedAmount = CryptoJS.AES.encrypt(
+          decryptedAmount,
+          secretKey
+        ).toString();
         const encryptedParams = new URLSearchParams();
-        encryptedParams.set('amount', encryptedAmount);
-        encryptedParams.set('username', username);
-
+        encryptedParams.set("amount", encryptedAmount);
+        encryptedParams.set("username", username);
         navigate(`?${encryptedParams.toString()}`, { replace: true });
         setOneTimeEncryption(true);
       }
     }
-  }, [location.search, navigate, oneTimeEncryption, secretKey]);
+  }, [location.search, navigate, oneTimeEncryption]);
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -105,52 +111,90 @@ function MainPage({ setTransactionId }) {
   };
 
   const fn_selectImage = async (e) => {
-    const worker = await createWorker('eng');
-    setSelectedImage(e?.target?.files?.[0]);
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+
+    setSelectedImage(file);
     setImageLoader(true);
-    const ret = await worker.recognize(e?.target?.files?.[0]);
-    const paragraphLines = ret?.data?.paragraphs?.[0]?.lines;
+    setProcessingError("");
+    setUtr("");
 
-    const data = paragraphLines?.filter(text => {
-      const lowerText = text?.text?.toLowerCase();
-      const hasKeyword = ['id', '#'].some(keyword =>
-        lowerText.includes(keyword)
+    const worker = await createWorker("eng");
+
+    try {
+      const ret = await worker.recognize(file);
+
+      const allLines = ret?.data?.lines || [];
+      console.log("lines ", allLines);
+
+      const specificText = allLines.filter((line) => {
+        return line.text?.split(/\s+/).some((word) => {
+          const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
+          return isValidWord && word.length > 7;
+        });
+      });
+
+      console.log("specificText", specificText);
+
+      const mostSpecificText = specificText
+        .map((text) => {
+          const matchedWord = text?.words?.find((word) => {
+            const wordText = word?.text || "";
+            const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
+            return isAlphanumeric && wordText.length > 7;
+          });
+          return matchedWord || null;
+        })
+        .filter(Boolean);
+      console.log("mostSpecificText ", mostSpecificText?.[0]?.text || null);
+      const autoUTR = mostSpecificText?.[0]?.text || "";
+      setUtr(autoUTR);
+    } catch (error) {
+      console.error("Receipt processing error:", error);
+      setProcessingError(
+        "Error processing receipt. Please enter UTR manually."
       );
-      const hasNumber = /\d/.test(text?.text);
-
-      return hasKeyword && hasNumber;
-    }).map(text => text.text);
-    setImageLoader(false);
-    const string = data?.[0];
-    const regex = /\d+/g;
-    const matches = string.match(regex);
-    const longNumbers = matches ? matches.find(num => num.length > 8) : [];
-    console.log(longNumbers);
-    if (longNumbers) {
-      setUtr(longNumbers);
+    } finally {
+      setImageLoader(false);
+      await worker.terminate();
     }
-    setImageLoader(false);
-    await worker.terminate();
   };
 
   const fn_Banksubmit = async () => {
-    if (!selectedImage) return alert("Upload Transaction Slip");
-    if (utr === "") return alert("Enter UTR Number");
-    if (!checkBox) return alert("Verify the Uploaded Receipt Checkbox");
+    if (!selectedImage) {
+      alert("Upload Transaction Slip");
+      return;
+    }
+    if (utr === "") {
+      alert("Enter UTR Number");
+      return;
+    }
+    if (!checkBox) {
+      alert("Verify the Uploaded Receipt Checkbox");
+      return;
+    }
+
     const formData = new FormData();
-    formData.append('image', selectedImage);
-    formData.append('utr', utr);
-    formData.append('amount', originalAmount);
-    formData.append('tax', webInfo?.tax || 0);
-    formData.append('total', (originalAmount/100 * (webInfo?.tax || 0) + parseFloat(originalAmount)).toFixed(1));
-    formData.append('website', window.location.origin);
-    formData.append('bankId', bank?._id);
+    formData.append("image", selectedImage);
+    formData.append("utr", utr);
+    formData.append("amount", originalAmount);
+    formData.append("tax", webInfo?.tax || 0);
+    formData.append(
+      "total",
+      (
+        (originalAmount / 100) * (webInfo?.tax || 0) +
+        parseFloat(originalAmount)
+      ).toFixed(1)
+    );
+    formData.append("website", window.location.origin);
+    formData.append("bankId", bank?._id);
+
     const response = await fn_uploadTransactionApi(formData);
     if (response?.status) {
       if (response?.data?.status === "ok") {
-        setUtr('');
+        setUtr("");
         setSelectedImage({});
-        setTransactionId(response?.data?.data?.trnNo)
+        setTransactionId(response?.data?.data?.trnNo);
         navigate("/payment-done");
       } else {
         alert(response?.message || "Something Went Wrong");
@@ -165,14 +209,15 @@ function MainPage({ setTransactionId }) {
       <div className="w-full max-w-[1200px] mx-auto my-[30px] md:my-[100px] sm:my-[60px] px-4 sm:px-0 md:scale-[0.9]">
         <main className="flex flex-col-reverse lg:flex-row gap-[60px] md:gap-2">
           <div className="w-full lg:w-[70%] max-w-[1000px] bg-white sm:px-6 lg:pe-[40px]">
-            {/* tabs */}
+            {/* Payment method tabs */}
             <div className="flex flex-col sm:flex-row mb-8 sm:mb-12">
               <div
                 onClick={() => setSelectedMethod("UPI")}
-                className={`w-full sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${selectedMethod === "UPI"
-                  ? "outline outline-[2px] outline-[--main]"
-                  : "outline outline-[1px] outline-r-0 outline-[--secondary]"
-                  } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
+                className={`w-full sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${
+                  selectedMethod === "UPI"
+                    ? "outline outline-[2px] outline-[--main]"
+                    : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+                } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
               >
                 <img
                   src={upilogo}
@@ -182,10 +227,11 @@ function MainPage({ setTransactionId }) {
               </div>
               <div
                 onClick={() => setSelectedMethod("Bank")}
-                className={`w-full sm:w-1/2 p-3 sm:p-4 ${selectedMethod === "Bank"
-                  ? "outline outline-[2px] outline-[--main]"
-                  : "outline outline-[1px] outline-r-0 outline-[--secondary]"
-                  } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
+                className={`w-full sm:w-1/2 p-3 sm:p-4 ${
+                  selectedMethod === "Bank"
+                    ? "outline outline-[2px] outline-[--main]"
+                    : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+                } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
               >
                 <img
                   src={banklogo}
@@ -194,7 +240,8 @@ function MainPage({ setTransactionId }) {
                 />
               </div>
             </div>
-            {Object?.keys(bank)?.length > 0 ? (
+
+            {Object.keys(bank).length > 0 ? (
               <div className="flex flex-col sm:flex-row md:min-h-[700px]">
                 {/* Sidebar */}
                 <div className="w-full sm:w-1/3 bg-[--grayBg] border border-[--secondary] flex flex-col gap-2">
@@ -202,42 +249,51 @@ function MainPage({ setTransactionId }) {
                     <div>
                       <div
                         onClick={() => setSelectedUPIMethod("viaQR")}
-                        className={`p-2 border-l-[6px] flex items-center gap-2 cursor-pointer ${selectedUPIMethod === "viaQR"
-                          ? "bg-white border-[--main] text-black"
-                          : "bg-[--grayBg] border-[gray-900] text-gray-700"
-                          }`}
+                        className={`p-2 border-l-[6px] flex items-center gap-2 cursor-pointer ${
+                          selectedUPIMethod === "viaQR"
+                            ? "bg-white border-[--main] text-black"
+                            : "bg-[--grayBg] border-[gray-900] text-gray-700"
+                        }`}
                       >
                         <img src={viaQr} alt="Via QR" className="w-8 h-8" />
                         <p className="font-bold text-[19px]">UPI</p>
-                        <span className="text-[18px] mt-[1px]">(via QR Scan)</span>
+                        <span className="text-[18px] mt-[1px]">
+                          (via QR Scan)
+                        </span>
                       </div>
 
                       <div className="border-t-2 border-b-2 border-gray-300">
                         <div
                           onClick={() => setSelectedUPIMethod("viaApp")}
-                          className={`p-2  border-l-[6px] flex  gap-2 cursor-pointer ${selectedUPIMethod === "viaApp"
-                            ? "bg-white border-[--main] "
-                            : "bg-[--grayBg] border-[gray-900]"
-                            }`}
+                          className={`p-2 border-l-[6px] flex gap-2 cursor-pointer ${
+                            selectedUPIMethod === "viaApp"
+                              ? "bg-white border-[--main]"
+                              : "bg-[--grayBg] border-[gray-900]"
+                          }`}
                         >
                           <img src={arrow} alt="Arrow" className="w-8 h-8" />
                           <p className="font-bold text-[19px]">UPI</p>
-                          <span className="text-[18px] mt-[1px]">(via UPI App)</span>
+                          <span className="text-[18px] mt-[1px]">
+                            (via UPI App)
+                          </span>
                         </div>
                       </div>
                     </div>
                   ) : (
                     <div>
-                      <div
-                        onClick={() => setSelectedBankMethod("Bank of Baroda")}
-                        className={`flex gap-1 cursor-pointer bg-white border-l-[6px] border-l-[--bred] text-black border-b-2 border-gray-300`}
-                      >
+                      <div className="flex gap-1 cursor-pointer bg-white border-l-[6px] border-l-[--bred] text-black border-b-2 border-gray-300">
                         <img
                           className="w-12 h-12 ml-1"
-                          src={`${BACKEND_URL}/${bank?.image}`}
-                          alt="Bank of Baroda logo"
+                          src={
+                            Banks?.find(
+                              (bankItem) =>
+                                bankItem?.title?.toLowerCase() ===
+                                bank?.bankName?.toLowerCase()
+                            )?.img || "https://www.shutterstock.com/image-vector/bank-building-architecture-facade-government-600nw-2440534455.jpg"
+                          }
+                          alt={`${bank?.bankName || "Bank"} logo`}
                         />
-                        <p className=" text-[19px] font-[700] pt-2">
+                        <p className="text-[19px] font-[700] pt-2">
                           {bank?.bankName}
                         </p>
                       </div>
@@ -248,50 +304,60 @@ function MainPage({ setTransactionId }) {
                 {/* Payment Form Section */}
                 <div className="w-full sm:w-2/3 border rounded-r-[10px] px-[1.7rem] py-[1.3rem]">
                   {selectedMethod === "UPI" ? (
-                    <UPIMethod setTransactionId={setTransactionId} selectedUPIMethod={selectedUPIMethod} bank={bank} amount={originalAmount} tax={webInfo?.tax || 0} total={(originalAmount/100 * (webInfo?.tax || 0) + parseFloat(originalAmount)).toFixed(1)} />
+                    <UPIMethod
+                      setTransactionId={setTransactionId}
+                      selectedUPIMethod={selectedUPIMethod}
+                      bank={bank}
+                      amount={originalAmount}
+                      tax={webInfo?.tax || 0}
+                      total={(
+                        (originalAmount / 100) * (webInfo?.tax || 0) +
+                        parseFloat(originalAmount)
+                      ).toFixed(1)}
+                    />
                   ) : (
                     <div className="rounded-tr-md rounded-br-md flex flex-col">
-                      <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
+                      <p className="text-[17px] sm:text-[23px] font-[700] mb-4 text-center sm:text-left">
                         Scan to Pay
                       </p>
                       <img
                         src={Qrcode}
                         alt="QR Code"
-                        className="w-[95px] sm:w-[110px] mb-4"
+                        className="w-[95px] sm:w-[110px] mb-5"
                       />
-                      <div className="text-sm sm:text-base font-roboto mb-4 mt-9">
+                      <div className="text-sm sm:text-base font-roboto mt-1">
                         <div className="grid grid-cols-2 gap-y-1 text-[17px] sm:text-[23px] font-[700] text-gray-700">
                           <span className="text-[16px] font-[700] text-gray-700">
                             Bank Name:
                           </span>
-                          <span className="text-[16px]">
+                          <span className="text-[14px] font-[500]">
                             {bank?.bankName}
                           </span>
 
                           <span className="text-[16px] font-[700] text-gray-700">
                             Account Holder Name:
                           </span>
-                          <span className="text-[16px]">
+                          <span className="text-[14px] font-[500]">
                             {bank?.accountHolderName}
                           </span>
 
                           <span className="text-[16px] font-[700] text-gray-700">
                             Account Number:
                           </span>
-                          <span className="text-[16px]">
+                          <span className="text-[14px] font-[500]">
                             {bank?.accountNo}
                           </span>
 
                           <span className="text-[16px] font-[700] text-gray-700">
                             IBAN:
                           </span>
-                          <span className="text-[16px] break-words">
+                          <span className="text-[14px] font-[500] break-words">
                             {bank?.iban}
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-3 sm:space-x-1 mb-4">
+                      <div className="flex items-center space-x-3 sm:space-x-1 mb-2">
                         <img
                           src={attention}
                           alt="Attention Sign"
@@ -317,7 +383,9 @@ function MainPage({ setTransactionId }) {
                                 alt="Upload"
                                 className="w-5 h-5 mr-2"
                               />
-                              <span className="text-gray-400 font-[400]">Upload File</span>
+                              <span className="text-gray-400 font-[400]">
+                                Upload File
+                              </span>
                             </div>
                           </label>
                           <p className="text-[14px] font-[600]">
@@ -335,7 +403,13 @@ function MainPage({ setTransactionId }) {
                               ariaLabel="color-ring-loading"
                               wrapperStyle={{}}
                               wrapperClass="color-ring-wrapper"
-                              colors={['#000000', '#000000', '#000000', '#000000', '#000000']}
+                              colors={[
+                                "#000000",
+                                "#000000",
+                                "#000000",
+                                "#000000",
+                                "#000000",
+                              ]}
                             />
                           )}
                         </div>
@@ -347,8 +421,18 @@ function MainPage({ setTransactionId }) {
                           className="w-full text-gray-800 font-[400] border border-[--secondary] h-[45px] px-[20px] rounded-md focus:outline-none text-[15px]"
                         />
                         <div className="flex items-center gap-[7px]">
-                          <input type="checkbox" id="check-box" onChange={(e) => setCheckBox(e.target.checked)} />
-                          <label htmlFor="check-box" className="text-[14px] font-[500] cursor-pointer">This is autofill UTR from Your Uploaded Receipt, verify it.</label>
+                          <input
+                            type="checkbox"
+                            id="check-box"
+                            onChange={(e) => setCheckBox(e.target.checked)}
+                          />
+                          <label
+                            htmlFor="check-box"
+                            className="text-[14px] font-[500] cursor-pointer"
+                          >
+                            This is autofill UTR from Your Uploaded Receipt,
+                            verify it.
+                          </label>
                         </div>
                         <button
                           onClick={fn_Banksubmit}
@@ -363,19 +447,27 @@ function MainPage({ setTransactionId }) {
               </div>
             ) : (
               <div className="flex flex-col sm:flex-row md:min-h-[700px]">
-                <p className='text-center w-full'><FaExclamationCircle className='inline-block text-[22px] mt-[-3px]' />&nbsp;&nbsp;No {selectedMethod === "UPI" && "UPI"} Bank Added</p>
+                <p className="text-center w-full">
+                  <FaExclamationCircle className="inline-block text-[22px] mt-[-3px]" />
+                  &nbsp;&nbsp;No {selectedMethod === "UPI" && "UPI"} Bank Added
+                </p>
               </div>
             )}
           </div>
 
           {/* Right Section (30%) - Order Summary */}
           <div className="w-full lg:w-[30%] bg-white text-gray-400 sm:px-6 lg:pr-0 lg:ps-6 lg:border-l-2 border-l-2-[--secondary]">
-            <OrderSummary amount={parseFloat(originalAmount)} tax={parseFloat(originalTax)} subtotal={parseFloat(originalTotal)} webInfo={webInfo} />
+            <OrderSummary
+              amount={parseFloat(originalAmount)}
+              tax={parseFloat(originalTax)}
+              subtotal={parseFloat(originalTotal)}
+              webInfo={webInfo}
+            />
           </div>
         </main>
       </div>
     </Layout>
-  )
+  );
 }
 
 export default MainPage;

@@ -10,35 +10,61 @@ import { fn_uploadTransactionApi } from "../../api/api";
 
 function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount, tax, total }) {
   const navigate = useNavigate();
-  const [utr, setUtr] = useState('');
+  const [utr, setUtr] = useState("");
+  const [checkBox, setCheckBox] = useState(false);
   const [imageLoader, setImageLoader] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [checkBox, setCheckBox] = useState(false);
+  const [processingError, setProcessingError] = useState("");
+
 
   const fn_selectImage = async (e) => {
-    const worker = await createWorker('eng');
-    setSelectedImage(e?.target?.files?.[0]);
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+
+    setSelectedImage(file);
     setImageLoader(true);
-    const ret = await worker.recognize(e?.target?.files?.[0]);
-    const paragraphLines = ret?.data?.paragraphs?.[0]?.lines;
-    console.log(paragraphLines)
-    const data = paragraphLines?.filter(text => {
-      const lowerText = text?.text?.toLowerCase();
-      const hasKeyword = ['id'].some(keyword =>
-        lowerText.includes(keyword)
+    setProcessingError("");
+    setUtr("");
+
+    const worker = await createWorker("eng");
+
+    try {
+      const ret = await worker.recognize(file);
+
+      const allLines = ret?.data?.lines || [];
+      console.log("lines ", allLines);
+
+      const specificText = allLines.filter((line) => {
+        return line.text?.split(/\s+/).some((word) => {
+          const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
+          return isValidWord && word.length > 7;
+        });
+      });
+
+      console.log("specificText", specificText);
+
+      const mostSpecificText = specificText
+        .map((text) => {
+          const matchedWord = text?.words?.find((word) => {
+            const wordText = word?.text || "";
+            const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
+            return isAlphanumeric && wordText.length > 7;
+          });
+          return matchedWord || null;
+        })
+        .filter(Boolean);
+      console.log("mostSpecificText ", mostSpecificText?.[0]?.text || null);
+      const autoUTR = mostSpecificText?.[0]?.text || "";
+      setUtr(autoUTR);
+    } catch (error) {
+      console.error("Receipt processing error:", error);
+      setProcessingError(
+        "Error processing receipt. Please enter UTR manually."
       );
-      const hasNumber = /\d/.test(text?.text);
-      return hasKeyword && hasNumber;
-    }).map(text => text.text);
-    setImageLoader(false);
-    const string = data?.[0];
-    const regex = /\d+/g;
-    const matches = string.match(regex);
-    const longNumbers = matches ? matches.find(num => num.length > 8) : [];
-    if (longNumbers) {
-      setUtr(longNumbers);
+    } finally {
+      setImageLoader(false);
+      await worker.terminate();
     }
-    await worker.terminate();
   };
 
   const fn_QRsubmit = async () => {
@@ -165,7 +191,7 @@ function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount
             type="text"
             value={utr}
             onChange={(e) => setUtr(e.target.value)}
-            placeholder="Enter UTR Number"
+            placeholder="Enter UTR Number."
             className="w-full text-gray-800 font-[400] border border-[--secondary] h-[45px] px-[20px] rounded-md focus:outline-none text-[15px]"
           />
           <div className="flex items-center gap-[7px]">
