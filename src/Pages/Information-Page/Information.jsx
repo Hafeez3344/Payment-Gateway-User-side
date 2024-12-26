@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const Information = () => {
-  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [amount, setAmount] = useState("");
   const fn_submit = (e) => {
     e.preventDefault();
-    navigate(`/payment?username=${username}&amount=${amount}`);
+    window.location.href = `https://www.royal247.org/payment?username=${username}&amount=${amount}`;
   }
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
