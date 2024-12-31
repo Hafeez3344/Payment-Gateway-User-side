@@ -1,6 +1,7 @@
 import axios from "axios";
 
 export const BACKEND_URL = "https://backend.royal247.org"
+// export const BACKEND_URL = "http://46.202.166.64:8000"
 
 export const fn_getBanksByTabApi = async (tab) => {
 
