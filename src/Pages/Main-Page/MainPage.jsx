@@ -17,12 +17,12 @@ import { Banks } from "../../json-data/banks";
 
 import viaQr from "../../assets/viaQr.svg";
 import arrow from "../../assets/arrow.svg";
-import Qrcode from "../../assets/Qrcode.svg";
 import upilogo from "../../assets/upilogo.png";
 import banklogo from "../../assets/banklogo.svg";
 import attention from "../../assets/attention.gif";
 import cloudupload from "../../assets/cloudupload.svg";
 import { FaExclamationCircle } from "react-icons/fa";
+import RefreshPage from "../Refresh-Page/RefreshPage";
 
 function MainPage({ setTransactionId }) {
   const navigate = useNavigate();
@@ -59,26 +59,41 @@ function MainPage({ setTransactionId }) {
   useEffect(() => {
     const amount = searchParams.get("amount");
     const username = searchParams.get("username");
+    let processedUsername = username;
+    if (username && username.includes("_")) {
+      const [, extractedUsername] = username.split("_");
+      processedUsername = extractedUsername || username;
+    }
 
     const isValidNumber = (value) => /^\d+(\.\d+)?$/.test(value);
     let decryptedAmount = decrypt(amount);
+    let decryptedUsername = decrypt(processedUsername);
 
     if (!decryptedAmount || !isValidNumber(decryptedAmount)) {
       decryptedAmount = amount;
     }
 
-    if (decryptedAmount) {
-      setOriginalAmount(decryptedAmount);
-      setOriginalUsername(username);
+    if (!decryptedUsername) {
+      decryptedUsername = processedUsername;
+    }
 
+    if (decryptedAmount && decryptedUsername) {
       if (!oneTimeEncryption) {
+        setOriginalAmount(amount);
+        setOriginalUsername(processedUsername);
         const encryptedAmount = CryptoJS.AES.encrypt(
           decryptedAmount,
           secretKey
         ).toString();
+        const encryptedUsername = processedUsername
+          ? CryptoJS.AES.encrypt(processedUsername, secretKey).toString()
+          : "";
+
         const encryptedParams = new URLSearchParams();
         encryptedParams.set("amount", encryptedAmount);
-        encryptedParams.set("username", username);
+        if (encryptedUsername) {
+          encryptedParams.set("username", encryptedUsername);
+        }
         navigate(`?${encryptedParams.toString()}`, { replace: true });
         setOneTimeEncryption(true);
       }
@@ -189,7 +204,7 @@ function MainPage({ setTransactionId }) {
     formData.append("website", window.location.origin);
     formData.append("bankId", bank?._id);
 
-    const response = await fn_uploadTransactionApi(formData);
+    const response = await fn_uploadTransactionApi(formData, originalUsername);
     if (response?.status) {
       if (response?.data?.status === "ok") {
         setUtr("");
@@ -203,6 +218,12 @@ function MainPage({ setTransactionId }) {
       alert(response?.message || "Something Went Wrong");
     }
   };
+
+  const isValidNumber = (value) => /^\d+(\.\d+)?$/.test(value);
+
+  if (!isValidNumber(originalAmount)) {
+    return <RefreshPage />;
+  }
 
   return (
     <Layout>
@@ -289,7 +310,8 @@ function MainPage({ setTransactionId }) {
                               (bankItem) =>
                                 bankItem?.title?.toLowerCase() ===
                                 bank?.bankName?.toLowerCase()
-                            )?.img || "https://www.shutterstock.com/image-vector/bank-building-architecture-facade-government-600nw-2440534455.jpg"
+                            )?.img ||
+                            "https://www.shutterstock.com/image-vector/bank-building-architecture-facade-government-600nw-2440534455.jpg"
                           }
                           alt={`${bank?.bankName || "Bank"} logo`}
                         />
@@ -314,17 +336,153 @@ function MainPage({ setTransactionId }) {
                         (originalAmount / 100) * (webInfo?.tax || 0) +
                         parseFloat(originalAmount)
                       ).toFixed(1)}
+                      username={originalUsername}
                     />
                   ) : (
+                    // <div className="rounded-tr-md rounded-br-md flex flex-col">
+                    //   {bank?.image ? (
+                    //     <>
+                    //       <p className="text-[17px] sm:text-[23px] font-[700] mb-4 text-center sm:text-left">
+                    //         Scan to Pay
+                    //       </p>
+                    //       <img
+                    //         src={`${BACKEND_URL}/${bank?.image}`}
+                    //         alt="QR Code"
+                    //         className="w-[95px] sm:w-[110px] mb-5"
+                    //       />
+                    //     </>
+                    //   ) : null}
+                    //   <div className="text-sm sm:text-base font-roboto mt-1">
+                    //     <div className="grid grid-cols-2 gap-y-1 text-[17px] sm:text-[23px] font-[700] text-gray-700">
+                    //       <span className="text-[16px] font-[700] text-gray-700">
+                    //         Bank Name:
+                    //       </span>
+                    //       <span className="text-[14px] font-[500]">
+                    //         {bank?.bankName}
+                    //       </span>
+
+                    //       <span className="text-[16px] font-[700] text-gray-700">
+                    //         Account Holder Name:
+                    //       </span>
+                    //       <span className="text-[14px] font-[500]">
+                    //         {bank?.accountHolderName}
+                    //       </span>
+
+                    //       <span className="text-[16px] font-[700] text-gray-700">
+                    //         Account Number:
+                    //       </span>
+                    //       <span className="text-[14px] font-[500]">
+                    //         {bank?.accountNo}
+                    //       </span>
+
+                    //       <span className="text-[16px] font-[700] text-gray-700">
+                    //         IBAN:
+                    //       </span>
+                    //       <span className="text-[14px] font-[500] break-words">
+                    //         {bank?.iban}
+                    //       </span>
+                    //     </div>
+                    //   </div>
+
+                    //   <div className="flex items-center space-x-3 sm:space-x-1 mb-2">
+                    //     <img
+                    //       src={attention}
+                    //       alt="Attention Sign"
+                    //       className="w-12 sm:w-16 lg:w-24 -ml-5"
+                    //     />
+                    //     <p className="italic text-gray-500 -ml-8">
+                    //       After transfer the payment in above bank <br /> please
+                    //       attach the receipt below.
+                    //     </p>
+                    //   </div>
+
+                    //   <div className="flex flex-col gap-4">
+                    //     <div className="flex gap-3 items-center">
+                    //       <label className="w-[150px]">
+                    //         <input
+                    //           type="file"
+                    //           className="cursor-pointer hidden"
+                    //           onChange={(e) => fn_selectImage(e)}
+                    //         />
+                    //         <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer flex items-center justify-center text-gray-700 w-[120px] sm:w-auto">
+                    //           <img
+                    //             src={cloudupload}
+                    //             alt="Upload"
+                    //             className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"
+                    //           />
+                    //           <span className="text-gray-400 text-sm sm:text-base font-[400]">
+                    //             Upload File
+                    //           </span>
+                    //         </div>
+                    //       </label>
+                    //       <p className="text-[14px] font-[600] text-nowrap">
+                    //         {!selectedImage ? (
+                    //           <span>Attach transaction slip here</span>
+                    //         ) : (
+                    //           <span>{selectedImage?.name}</span>
+                    //         )}
+                    //       </p>
+                    //       {imageLoader && (
+                    //         <ColorRing
+                    //           visible={true}
+                    //           height="45"
+                    //           width="45"
+                    //           ariaLabel="color-ring-loading"
+                    //           wrapperStyle={{}}
+                    //           wrapperClass="color-ring-wrapper"
+                    //           colors={[
+                    //             "#000000",
+                    //             "#000000",
+                    //             "#000000",
+                    //             "#000000",
+                    //             "#000000",
+                    //           ]}
+                    //         />
+                    //       )}
+                    //     </div>
+                    //     <input
+                    //       type="text"
+                    //       value={utr}
+                    //       onChange={(e) => setUtr(e.target.value)}
+                    //       placeholder="Enter UTR Number"
+                    //       className="w-full text-gray-800 font-[400] border border-[--secondary] h-[45px] px-[20px] rounded-md focus:outline-none text-[15px]"
+                    //     />
+                    //     <div className="flex items-center gap-[7px]">
+                    //       <input
+                    //         type="checkbox"
+                    //         id="check-box"
+                    //         onChange={(e) => setCheckBox(e.target.checked)}
+                    //       />
+                    //       <label
+                    //         htmlFor="check-box"
+                    //         className="text-[14px] font-[500] cursor-pointer"
+                    //       >
+                    //         This is autofill UTR from Your Uploaded Receipt,
+                    //         verify it.
+                    //       </label>
+                    //     </div>
+                    //     <button
+                    //       onClick={fn_Banksubmit}
+                    //       className="w-full bg-[--main] font-[500] text-[15px] h-[45px] text-white rounded-md"
+                    //     >
+                    //       Submit Now
+                    //     </button>
+                    //   </div>
+                    // </div>
+
                     <div className="rounded-tr-md rounded-br-md flex flex-col">
-                      <p className="text-[17px] sm:text-[23px] font-[700] mb-4 text-center sm:text-left">
-                        Scan to Pay
-                      </p>
-                      <img
-                        src={Qrcode}
-                        alt="QR Code"
-                        className="w-[95px] sm:w-[110px] mb-5"
-                      />
+                      {bank?.image ? (
+                        <>
+                          <p className="text-[17px] sm:text-[23px] font-[700] mb-4 text-center sm:text-left">
+                            Scan to Pay
+                          </p>
+                          <img
+                            src={`${BACKEND_URL}/${bank?.image}`}
+                            alt="QR Code"
+                            className="w-[95px] sm:w-[110px] mb-5"
+                          />
+                        </>
+                      ) : null}
                       <div className="text-sm sm:text-base font-roboto mt-1">
                         <div className="grid grid-cols-2 gap-y-1 text-[17px] sm:text-[23px] font-[700] text-gray-700">
                           <span className="text-[16px] font-[700] text-gray-700">
@@ -357,7 +515,11 @@ function MainPage({ setTransactionId }) {
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-3 sm:space-x-1 mb-2">
+                      <div
+                        className={`flex items-center space-x-3 sm:space-x-1 ${
+                          bank?.image ? "mb-2" : "mt-1 mb-2"
+                        }`}
+                      >
                         <img
                           src={attention}
                           alt="Attention Sign"
@@ -377,13 +539,13 @@ function MainPage({ setTransactionId }) {
                               className="cursor-pointer hidden"
                               onChange={(e) => fn_selectImage(e)}
                             />
-                            <div className="px-3 py-2 sm:px-4 h-[45px] rounded-md cursor-pointer flex items-center justify-center text-gray-700 border border-black">
+                            <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer flex items-center justify-center text-gray-700 w-[120px] sm:w-auto">
                               <img
                                 src={cloudupload}
                                 alt="Upload"
-                                className="w-5 h-5 mr-2"
+                                className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"
                               />
-                              <span className="text-gray-400 font-[400]">
+                              <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
                                 Upload File
                               </span>
                             </div>

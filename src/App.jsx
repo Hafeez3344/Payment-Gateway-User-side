@@ -6,6 +6,7 @@ import PaymentDone from "./Pages/Payment-Done/PaymentDone";
 import PaymentCancel from "./Pages/Payment-Cancel/PaymentCancel";
 import WaitingforUPIApproval from "./Pages/Waiting-for-UPI-Approval/WaitingforUPIApproval";
 import Information from "./Pages/Information-Page/information";
+import RefreshPage from "./Pages/Refresh-Page/RefreshPage";
 
 function App() {
   const [transactionId, setTransactionId] = useState("");
@@ -17,6 +18,7 @@ function App() {
         <Route path="/payment-cancel" element={<PaymentCancel />} />
         <Route path="/payment-done" element={<PaymentDone transactionId={transactionId} />} />
         <Route path="/waiting-for-upi-approval" element={<WaitingforUPIApproval />} />
+        <Route path="/refresh-page" element={<RefreshPage />} />
       </Routes>
     </>
   );

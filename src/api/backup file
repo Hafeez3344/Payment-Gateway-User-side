@@ -1,7 +1,7 @@
 import axios from "axios";
 
-export const BACKEND_URL = "https://backend.royal247.org"
-// export const BACKEND_URL = "http://46.202.166.64:8000"
+// export const BACKEND_URL = "https://backend.royal247.org"
+export const BACKEND_URL = "http://46.202.166.64:8000"
 
 
 export const fn_getBanksByTabApi = async (tab) => {
@@ -22,10 +22,8 @@ export const fn_getBanksByTabApi = async (tab) => {
     }
 }
 
-export const fn_uploadTransactionApi = async (formData, username) => {
+export const fn_uploadTransactionApi = async (formData) => {
     try {
-        formData.append("username", username);
-        console.log("username")
         const response = await axios.post(`${BACKEND_URL}/ledger/create`, formData);
         if (response?.status === 200) {
             if (response?.data?.status === "ok") {
@@ -33,7 +31,7 @@ export const fn_uploadTransactionApi = async (formData, username) => {
             }
         }
     } catch (error) {
-        console.log("fn_uploadTransactionApi", error);
+        console.log("fn_getBanksByTabApi ", error);
         if (error?.status === 400) {
             return { status: false, message: error?.response?.data?.message || "Something went wrong" }
         }

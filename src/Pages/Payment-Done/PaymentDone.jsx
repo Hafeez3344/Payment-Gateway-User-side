@@ -39,6 +39,7 @@ const PaymentDone = ({ transactionId }) => {
             to your wallet.
           </p>
 
+          {/* <button onClick={() => window.location.href = "https://dial4bet.com"} className="w-3/4 md:w-1/4 bg-[--main] font-[500] mt-3 text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none"> */}
           <button onClick={() => navigate("/")} className="w-3/4 md:w-1/4 bg-[--main] font-[500] mt-3 text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none">
             Return to App
           </button>

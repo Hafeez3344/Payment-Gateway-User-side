@@ -5,8 +5,9 @@ const Information = () => {
   const [amount, setAmount] = useState("");
   const fn_submit = (e) => {
     e.preventDefault();
-    window.location.href = `https://www.royal247.org/payment?username=${username}&amount=${amount}`;
-  }
+    // window.location.href = `https://www.royal247.org/payment?username=${username}&amount=${amount}`;
+    window.location.href = `/payment?username=${username}&amount=${amount}`;
+  };
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg max-w-md shadow-md">
