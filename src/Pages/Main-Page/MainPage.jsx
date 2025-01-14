@@ -125,6 +125,57 @@ function MainPage({ setTransactionId }) {
     }
   };
 
+  // const fn_selectImage = async (e) => {
+  //   const file = e?.target?.files?.[0];
+  //   if (!file) return;
+
+  //   setSelectedImage(file);
+  //   setImageLoader(true);
+  //   setProcessingError("");
+  //   setUtr("");
+
+  //   const worker = await createWorker("eng");
+
+  //   try {
+  //     const ret = await worker.recognize(file);
+
+  //     const allLines = ret?.data?.lines || [];
+  //     console.log("lines ", allLines);
+
+  //     const specificText = allLines.filter((line) => {
+  //       return line.text?.split(/\s+/).some((word) => {
+  //         const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
+  //         return isValidWord && word.length > 7;
+  //       });
+  //     });
+
+  //     console.log("specificText", specificText);
+
+  //     const mostSpecificText = specificText
+  //       .map((text) => {
+  //         const matchedWord = text?.words?.find((word) => {
+  //           const wordText = word?.text || "";
+  //           const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
+  //           return isAlphanumeric && wordText.length > 7;
+  //         });
+  //         return matchedWord || null;
+  //       })
+  //       .filter(Boolean);
+  //     console.log("mostSpecificText ", mostSpecificText?.[0]?.text || null);
+  //     const autoUTR = mostSpecificText?.[0]?.text || "";
+  //     setUtr(autoUTR);
+  //   } catch (error) {
+  //     console.error("Receipt processing error:", error);
+  //     setProcessingError(
+  //       "Error processing receipt. Please enter UTR manually."
+  //     );
+  //   } finally {
+  //     setImageLoader(false);
+  //     await worker.terminate();
+  //   }
+  // };
+
+
   const fn_selectImage = async (e) => {
     const file = e?.target?.files?.[0];
     if (!file) return;
@@ -134,47 +185,64 @@ function MainPage({ setTransactionId }) {
     setProcessingError("");
     setUtr("");
 
-    const worker = await createWorker("eng");
+    const worker = await createWorker("eng", {
+      workerPath: 'https://unpkg.com/tesseract.js@v4.1.1/dist/worker.min.js',
+      langPath: 'https://raw.githubusercontent.com/tesseract-ocr/tessdata/4.0.0',
+      corePath: 'https://unpkg.com/tesseract.js-core@v4.0.3/tesseract-core.wasm.js',
+  });
 
     try {
-      const ret = await worker.recognize(file);
+      
+        // Initialize worker
+        await worker.loadLanguage('eng');
+        await worker.initialize('eng');
 
-      const allLines = ret?.data?.lines || [];
-      console.log("lines ", allLines);
-
-      const specificText = allLines.filter((line) => {
-        return line.text?.split(/\s+/).some((word) => {
-          const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
-          return isValidWord && word.length > 7;
+        // Convert file to base64 if needed
+        const imageData = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(file);
         });
-      });
 
-      console.log("specificText", specificText);
+        const ret = await worker.recognize(imageData);
 
-      const mostSpecificText = specificText
-        .map((text) => {
-          const matchedWord = text?.words?.find((word) => {
-            const wordText = word?.text || "";
-            const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
-            return isAlphanumeric && wordText.length > 7;
-          });
-          return matchedWord || null;
-        })
-        .filter(Boolean);
-      console.log("mostSpecificText ", mostSpecificText?.[0]?.text || null);
-      const autoUTR = mostSpecificText?.[0]?.text || "";
-      setUtr(autoUTR);
+        const allLines = ret?.data?.lines || [];
+        console.log("lines ", allLines);
+
+        const specificText = allLines.filter((line) => {
+            return line.text?.split(/\s+/).some((word) => {
+                const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
+                return isValidWord && word.length > 7;
+            });
+        });
+
+        console.log("specificText", specificText);
+
+        const mostSpecificText = specificText
+            .map((text) => {
+                const matchedWord = text?.words?.find((word) => {
+                    const wordText = word?.text || "";
+                    const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
+                    return isAlphanumeric && wordText.length > 7;
+                });
+                return matchedWord || null;
+            })
+            .filter(Boolean);
+
+        console.log("mostSpecificText ", mostSpecificText?.[0]?.text || null);
+        const autoUTR = mostSpecificText?.[0]?.text || "";
+        setUtr(autoUTR);
+
+        await worker.terminate();
     } catch (error) {
-      console.error("Receipt processing error:", error);
-      setProcessingError(
-        "Error processing receipt. Please enter UTR manually."
-      );
+        console.error("Receipt processing error:", error);
+        setProcessingError(
+            "Error processing receipt. Please enter UTR manually."
+        );
     } finally {
-      setImageLoader(false);
-      await worker.terminate();
+        setImageLoader(false);
     }
-  };
-
+};
   const fn_Banksubmit = async () => {
     if (!selectedImage) {
       alert("Upload Transaction Slip");
