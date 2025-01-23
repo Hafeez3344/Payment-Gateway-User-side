@@ -7,6 +7,10 @@ const PaymentCancel = () => {
   const containerHeight = window.innerHeight - 66 - 48;
   useEffect(() => {
     window.scroll(0, 0);
+    const timer = setTimeout(() => {
+      window.location.replace("https://dial4bet.com");
+    }, 5000); 
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -38,7 +42,7 @@ const PaymentCancel = () => {
 
           {/* Buttons */}
           <div className="flex flex-wrap justify-center gap-4">
-            <button className="w-full sm:w-2/5 md:w-1/5 bg-[--main] font-medium text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none">
+            <button onClick={() => window.location.replace("https://dial4bet.com")} className="w-full sm:w-2/5 md:w-1/5 bg-[--main] font-medium text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none">
               Return to App
             </button>
             <button className="w-full sm:w-2/5 md:w-1/5 bg-[--main] font-medium text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none">

@@ -25,56 +25,6 @@ function UPIMethod({
 
   console.log("UPI username ", username);
 
-  // const fn_selectImage = async (e) => {
-  //   const file = e?.target?.files?.[0];
-  //   if (!file) return;
-
-  //   setSelectedImage(file);
-  //   setImageLoader(true);
-  //   setProcessingError("");
-  //   setUtr("");
-
-  //   const worker = await createWorker("eng");
-
-  //   try {
-  //     const ret = await worker.recognize(file);
-
-  //     const allLines = ret?.data?.lines || [];
-  //     console.log("lines ", allLines);
-
-  //     const specificText = allLines.filter((line) => {
-  //       return line.text?.split(/\s+/).some((word) => {
-  //         const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
-  //         return isValidWord && word.length > 7;
-  //       });
-  //     });
-
-  //     console.log("specificText", specificText);
-
-  //     const mostSpecificText = specificText
-  //       .map((text) => {
-  //         const matchedWord = text?.words?.find((word) => {
-  //           const wordText = word?.text || "";
-  //           const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
-  //           return isAlphanumeric && wordText.length > 7;
-  //         });
-  //         return matchedWord || null;
-  //       })
-  //       .filter(Boolean);
-  //     console.log("mostSpecificText ", mostSpecificText?.[0]?.text || null);
-  //     const autoUTR = mostSpecificText?.[0]?.text || "";
-  //     setUtr(autoUTR);
-  //   } catch (error) {
-  //     console.error("Receipt processing error:", error);
-  //     setProcessingError(
-  //       "Error processing receipt. Please enter UTR manually."
-  //     );
-  //   } finally {
-  //     setImageLoader(false);
-  //     await worker.terminate();
-  //   }
-  // };
-
   const fn_selectImage = async (e) => {
     const file = e?.target?.files?.[0];
     if (!file) return;
@@ -84,47 +34,47 @@ function UPIMethod({
     setProcessingError("");
     setUtr("");
 
-    const worker = await createWorker("eng", {
-        workerPath: 'https://unpkg.com/tesseract.js@v4.0.0/dist/worker.min.js',
-        corePath: 'https://unpkg.com/tesseract.js-core@v4.0.0/tesseract-core.wasm.js',
-        langPath: 'https://tessdata.projectnaptha.com/4.0.0'
-    });
+    const worker = await createWorker("eng");
 
     try {
-        const ret = await worker.recognize(file);
-        
-        const allLines = ret?.data?.lines || [];
-        
-        const specificText = allLines.filter((line) => {
-            return line.text?.split(/\s+/).some((word) => {
-                const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
-                return isValidWord && word.length > 7;
-            });
+      const ret = await worker.recognize(file);
+
+      const allLines = ret?.data?.lines || [];
+      console.log("lines ", allLines);
+
+      const specificText = allLines.filter((line) => {
+        return line.text?.split(/\s+/).some((word) => {
+          const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
+          return isValidWord && word.length > 7;
         });
+      });
 
-        const mostSpecificText = specificText
-            .map((text) => {
-                const matchedWord = text?.words?.find((word) => {
-                    const wordText = word?.text || "";
-                    const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
-                    return isAlphanumeric && wordText.length > 7;
-                });
-                return matchedWord || null;
-            })
-            .filter(Boolean);
+      console.log("specificText", specificText);
 
-        const autoUTR = mostSpecificText?.[0]?.text || "";
-        setUtr(autoUTR);
+      const mostSpecificText = specificText
+        .map((text) => {
+          const matchedWord = text?.words?.find((word) => {
+            const wordText = word?.text || "";
+            const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
+            return isAlphanumeric && wordText.length > 7;
+          });
+          return matchedWord || null;
+        })
+        .filter(Boolean);
+      console.log("mostSpecificText ", mostSpecificText?.[0]?.text || null);
+      const autoUTR = mostSpecificText?.[0]?.text || "";
+      setUtr(autoUTR);
     } catch (error) {
-        console.error("Receipt processing error:", error);
-        setProcessingError(
-            "Error processing receipt. Please enter UTR manually."
-        );
+      console.error("Receipt processing error:", error);
+      setProcessingError(
+        "Error processing receipt. Please enter UTR manually."
+      );
     } finally {
-        setImageLoader(false);
-        await worker.terminate();
+      setImageLoader(false);
+      await worker.terminate();
     }
-};
+  };
+
   const fn_QRsubmit = async () => {
     if (!selectedImage) return alert("Upload Transaction Slip");
     if (utr === "") return alert("Enter UTR Number");

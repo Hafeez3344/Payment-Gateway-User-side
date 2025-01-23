@@ -9,7 +9,11 @@ const PaymentDone = ({ transactionId }) => {
   const containerHeight = window.innerHeight - 66 - 48;
   useEffect(() => {
     window.scroll(0, 0);
-  }, []);
+    const timer = setTimeout(() => {
+      window.location.replace("https://dial4bet.com");
+    }, 5000); 
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   return (
     <>
@@ -39,8 +43,7 @@ const PaymentDone = ({ transactionId }) => {
             to your wallet.
           </p>
 
-          {/* <button onClick={() => window.location.href = "https://dial4bet.com"} className="w-3/4 md:w-1/4 bg-[--main] font-[500] mt-3 text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none"> */}
-          <button onClick={() => navigate("/")} className="w-3/4 md:w-1/4 bg-[--main] font-[500] mt-3 text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none">
+          <button onClick={() => window.location.replace("https://dial4bet.com")} className="w-3/4 md:w-1/4 bg-[--main] font-[500] mt-3 text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none">
             Return to App
           </button>
         </div>
