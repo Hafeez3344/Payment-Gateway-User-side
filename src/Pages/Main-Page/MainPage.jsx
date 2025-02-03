@@ -32,6 +32,8 @@ function MainPage({ setTransactionId }) {
   const searchParams = new URLSearchParams(location.search);
   const [oneTimeEncryption, setOneTimeEncryption] = useState(false);
   const [webInfo, setWebInfo] = useState({});
+  const type = searchParams.get("type");
+  const site = searchParams.get("site");
 
   const [selectedMethod, setSelectedMethod] = useState("UPI");
   const [selectedUPIMethod, setSelectedUPIMethod] = useState("viaQR");
@@ -94,7 +96,13 @@ function MainPage({ setTransactionId }) {
         if (encryptedUsername) {
           encryptedParams.set("username", encryptedUsername);
         }
-        navigate(`?${encryptedParams.toString()}`, { replace: true });
+        if (type && site) {
+          navigate(`?${encryptedParams.toString()}&type=direct&site=${site}`, {
+            replace: true,
+          });
+        } else {
+          navigate(`?${encryptedParams.toString()}`, { replace: true });
+        }
         setOneTimeEncryption(true);
       }
     }
@@ -175,7 +183,6 @@ function MainPage({ setTransactionId }) {
   //   }
   // };
 
-
   const fn_selectImage = async (e) => {
     const file = e?.target?.files?.[0];
     if (!file) return;
@@ -186,63 +193,64 @@ function MainPage({ setTransactionId }) {
     setUtr("");
 
     const worker = await createWorker("eng", {
-      workerPath: 'https://unpkg.com/tesseract.js@v4.1.1/dist/worker.min.js',
-      langPath: 'https://raw.githubusercontent.com/tesseract-ocr/tessdata/4.0.0',
-      corePath: 'https://unpkg.com/tesseract.js-core@v4.0.3/tesseract-core.wasm.js',
-  });
+      workerPath: "https://unpkg.com/tesseract.js@v4.1.1/dist/worker.min.js",
+      langPath:
+        "https://raw.githubusercontent.com/tesseract-ocr/tessdata/4.0.0",
+      corePath:
+        "https://unpkg.com/tesseract.js-core@v4.0.3/tesseract-core.wasm.js",
+    });
 
     try {
-      
-        // Initialize worker
-        await worker.loadLanguage('eng');
-        await worker.initialize('eng');
+      // Initialize worker
+      await worker.loadLanguage("eng");
+      await worker.initialize("eng");
 
-        // Convert file to base64 if needed
-        const imageData = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(file);
+      // Convert file to base64 if needed
+      const imageData = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+
+      const ret = await worker.recognize(imageData);
+
+      const allLines = ret?.data?.lines || [];
+      console.log("lines ", allLines);
+
+      const specificText = allLines.filter((line) => {
+        return line.text?.split(/\s+/).some((word) => {
+          const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
+          return isValidWord && word.length > 7;
         });
+      });
 
-        const ret = await worker.recognize(imageData);
+      console.log("specificText", specificText);
 
-        const allLines = ret?.data?.lines || [];
-        console.log("lines ", allLines);
+      const mostSpecificText = specificText
+        .map((text) => {
+          const matchedWord = text?.words?.find((word) => {
+            const wordText = word?.text || "";
+            const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
+            return isAlphanumeric && wordText.length > 7;
+          });
+          return matchedWord || null;
+        })
+        .filter(Boolean);
 
-        const specificText = allLines.filter((line) => {
-            return line.text?.split(/\s+/).some((word) => {
-                const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
-                return isValidWord && word.length > 7;
-            });
-        });
+      console.log("mostSpecificText ", mostSpecificText?.[0]?.text || null);
+      const autoUTR = mostSpecificText?.[0]?.text || "";
+      setUtr(autoUTR);
 
-        console.log("specificText", specificText);
-
-        const mostSpecificText = specificText
-            .map((text) => {
-                const matchedWord = text?.words?.find((word) => {
-                    const wordText = word?.text || "";
-                    const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
-                    return isAlphanumeric && wordText.length > 7;
-                });
-                return matchedWord || null;
-            })
-            .filter(Boolean);
-
-        console.log("mostSpecificText ", mostSpecificText?.[0]?.text || null);
-        const autoUTR = mostSpecificText?.[0]?.text || "";
-        setUtr(autoUTR);
-
-        await worker.terminate();
+      await worker.terminate();
     } catch (error) {
-        console.error("Receipt processing error:", error);
-        setProcessingError(
-            "Error processing receipt. Please enter UTR manually."
-        );
+      console.error("Receipt processing error:", error);
+      setProcessingError(
+        "Error processing receipt. Please enter UTR manually."
+      );
     } finally {
-        setImageLoader(false);
+      setImageLoader(false);
     }
-};
+  };
   const fn_Banksubmit = async () => {
     if (!selectedImage) {
       alert("Upload Transaction Slip");
@@ -271,6 +279,12 @@ function MainPage({ setTransactionId }) {
     );
     formData.append("website", window.location.origin);
     formData.append("bankId", bank?._id);
+    if (type && site) {
+      formData.append("type", type);
+      formData.append("site", site);
+    } else {
+      formData.append("type", "manual");
+    }
 
     const response = await fn_uploadTransactionApi(formData, originalUsername);
     if (response?.status) {
@@ -400,6 +414,8 @@ function MainPage({ setTransactionId }) {
                       bank={bank}
                       amount={originalAmount}
                       tax={webInfo?.tax || 0}
+                      type={type}
+                      site={site}
                       total={(
                         (originalAmount / 100) * (webInfo?.tax || 0) +
                         parseFloat(originalAmount)

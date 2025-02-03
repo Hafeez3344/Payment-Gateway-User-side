@@ -15,6 +15,8 @@ function UPIMethod({
   tax,
   total,
   username,
+  type,
+  site
 }) {
   const navigate = useNavigate();
   const [utr, setUtr] = useState("");
@@ -87,6 +89,12 @@ function UPIMethod({
     formData.append("total", total);
     formData.append("website", window.location.origin);
     formData.append("bankId", bank?._id);
+    if (type && site) {
+      formData.append("type", type);
+      formData.append("site", site);
+    }else{
+      formData.append("type", "manual");
+    }
     const response = await fn_uploadTransactionApi(formData, username);
     if (response?.status) {
       if (response?.data?.status === "ok") {

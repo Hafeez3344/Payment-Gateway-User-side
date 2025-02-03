@@ -12,7 +12,7 @@ function OrderSummary({ amount, tax, subtotal, webInfo }) {
         <span><FaIndianRupeeSign className='inline-block mt-[-2px]' /> {amount}</span>
       </div>
       <div className="flex font-[600] justify-between  sm:text-sm  mb-2">
-        <span>Tax:</span>
+        <span>Charges:</span>
         <span>{webInfo?.tax || 0}% ({(amount/100 * webInfo?.tax || 0).toFixed(1)})</span>
       </div>
       <div className="flex font-[600] justify-between  mt-2 sm:text-sm ">

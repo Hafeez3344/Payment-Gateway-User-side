@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 
 const Information = () => {
+  const [siteURL, setSiteURL] = useState("");
   const [username, setUsername] = useState("");
   const [amount, setAmount] = useState("");
   const fn_submit = (e) => {
     e.preventDefault();
     // window.location.href = `https://www.royal247.org/payment?username=${username}&amount=${amount}`;
-    window.location.href = `/payment?username=${username}&amount=${amount}`;
+    window.location.href = `/payment?username=${username}&amount=${amount}&type=direct&site=${siteURL}`;
   };
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -20,6 +21,23 @@ const Information = () => {
           </p>
         </div>
         <form className="space-y-4" onSubmit={fn_submit}>
+          <div>
+            <label
+              htmlFor="siteURL"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Site URL:
+            </label>
+            <input
+              type="text"
+              value={siteURL}
+              onChange={(e) => setSiteURL(e.target.value)}
+              name="siteURL"
+              placeholder="Enter Website URL"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
+            />
+          </div>
           <div>
             <label
               htmlFor="username"
