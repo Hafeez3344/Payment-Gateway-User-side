@@ -365,7 +365,7 @@ function MainPage({ setTransactionId }) {
                         </span>
                       </div>
 
-                      <div className="border-t-2 border-b-2 border-gray-300">
+                      {/* <div className="border-t-2 border-b-2 border-gray-300">
                         <div
                           onClick={() => setSelectedUPIMethod("viaApp")}
                           className={`p-2 border-l-[6px] flex gap-2 cursor-pointer ${
@@ -380,7 +380,7 @@ function MainPage({ setTransactionId }) {
                             (via UPI App)
                           </span>
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   ) : (
                     <div>

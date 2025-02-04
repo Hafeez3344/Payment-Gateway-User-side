@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import backgroundImage from "../../assets/background.jpg";
 
 const Information = () => {
   const [siteURL, setSiteURL] = useState("");
@@ -10,14 +11,19 @@ const Information = () => {
     window.location.href = `/payment?username=${username}&amount=${amount}&type=direct&site=${siteURL}`;
   };
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-lg max-w-md shadow-md">
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat relative"
+      style={{ backgroundImage: `url(${backgroundImage})` }}
+    >
+      <div className="absolute inset-0 bg-black/60"></div>
+
+      <div className="bg-white/90 p-6 rounded-lg max-w-md shadow-md backdrop-blur-sm relative z-10">
         <div className="text-center mb-6">
           <h2 className="text-[28px] font-semibold text-gray-800">
-            Information Form
+            Direct Payment
           </h2>
           <p className="text-gray-600 mt-2">
-            Please fill in the details below to submit your information.
+            Please fill in the details below for Direct Payment.
           </p>
         </div>
         <form className="space-y-4" onSubmit={fn_submit}>

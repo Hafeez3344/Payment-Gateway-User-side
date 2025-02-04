@@ -5,7 +5,7 @@ import MainPage from "./Pages/Main-Page/MainPage";
 import PaymentDone from "./Pages/Payment-Done/PaymentDone";
 import PaymentCancel from "./Pages/Payment-Cancel/PaymentCancel";
 import WaitingforUPIApproval from "./Pages/Waiting-for-UPI-Approval/WaitingforUPIApproval";
-import Information from "./Pages/Information-Page/information";
+import Information from "./Pages/Information-Page/Information";
 import RefreshPage from "./Pages/Refresh-Page/RefreshPage";
 
 function App() {
