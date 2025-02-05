@@ -21,19 +21,22 @@ const PaymentDone = ({ transactionId, amount, username, site }) => {
   // }, [transactionId]);
 
   useEffect(() => {
-    if(!amount || amount === ""){
-      return window.location.href = "/";
-    }
-    const timer = setTimeout(() => {
-      const message = encodeURIComponent(`Username: ${username}\nTransaction ID: ${transactionId}\nWebsite: ${site}\nAmount: ${amount}`);
-      const whatsappUrl = `https://api.whatsapp.com/send?phone=+919643242280&text=${message}`;
-      window.open(whatsappUrl, "_blank");
-    }, 5000);
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 7000);
+    if (!amount || amount === "") {
+      setTimeout(() => {
+        return window.location.replace("https://dial4bet.com");
+      }, 5000);
+    } else {
+      const timer = setTimeout(() => {
+        const message = encodeURIComponent(`Username: ${username}\nTransaction ID: ${transactionId}\nWebsite: ${site}\nAmount: ${amount}`);
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=+919643242280&text=${message}`;
+        window.open(whatsappUrl, "_blank");
+      }, 5000);
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 7000);
 
-    return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   return (
