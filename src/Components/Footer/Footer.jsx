@@ -15,7 +15,8 @@ const Footer = () => {
     if (
       path.pathname === "/payment-done" ||
       path.pathname === "/waiting-for-upi-approval" ||
-      path.pathname === "/payment-cancel"
+      path.pathname === "/payment-cancel" ||
+      path.pathname === "/"
     ) {
       setHideCards(true);
     }

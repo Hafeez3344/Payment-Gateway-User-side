@@ -23,6 +23,8 @@ import attention from "../../assets/attention.gif";
 import cloudupload from "../../assets/cloudupload.svg";
 import { FaExclamationCircle } from "react-icons/fa";
 import RefreshPage from "../Refresh-Page/RefreshPage";
+import { FaRegCopy } from "react-icons/fa6";
+import { TiTick } from "react-icons/ti";
 
 function MainPage({ setTransactionId }) {
   const navigate = useNavigate();
@@ -303,6 +305,41 @@ function MainPage({ setTransactionId }) {
 
   const isValidNumber = (value) => /^\d+(\.\d+)?$/.test(value);
 
+  const [copyIban, setCopyIban] = useState(false);
+  const [copyAccount, setCopyAccount] = useState(false);
+  const [copyBankName, setCopyBankName] = useState(false);
+  const [copyHolderName, setCopyHolderName] = useState(false);
+
+  const fn_copy = (label, text) => {
+    if (label === "copyBankName") {
+      navigator.clipboard.writeText(text).then(() => setCopyBankName(true));
+    };
+    if (label === "copyHolderName") {
+      navigator.clipboard.writeText(text).then(() => setCopyHolderName(true));
+    };
+    if (label === "copyAccount") {
+      navigator.clipboard.writeText(text).then(() => setCopyAccount(true));
+    };
+    if (label === "copyIban") {
+      navigator.clipboard.writeText(text).then(() => setCopyIban(true));
+    };
+  };
+
+  useEffect(() => {
+    if (copyBankName) {
+      setTimeout(() => setCopyBankName(false), 1000);
+    }
+    if (copyHolderName) {
+      setTimeout(() => setCopyHolderName(false), 1000);
+    }
+    if (copyAccount) {
+      setTimeout(() => setCopyAccount(false), 1000);
+    }
+    if (copyIban) {
+      setTimeout(() => setCopyIban(false), 1000);
+    }
+  }, [copyBankName, copyHolderName, copyAccount, copyIban]);
+
   if (!isValidNumber(originalAmount)) {
     return <RefreshPage />;
   }
@@ -316,11 +353,10 @@ function MainPage({ setTransactionId }) {
             <div className="flex flex-col sm:flex-row mb-8 sm:mb-12">
               <div
                 onClick={() => setSelectedMethod("UPI")}
-                className={`w-full sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${
-                  selectedMethod === "UPI"
-                    ? "outline outline-[2px] outline-[--main]"
-                    : "outline outline-[1px] outline-r-0 outline-[--secondary]"
-                } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
+                className={`w-full sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${selectedMethod === "UPI"
+                  ? "outline outline-[2px] outline-[--main]"
+                  : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+                  } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
               >
                 <img
                   src={upilogo}
@@ -330,11 +366,10 @@ function MainPage({ setTransactionId }) {
               </div>
               <div
                 onClick={() => setSelectedMethod("Bank")}
-                className={`w-full sm:w-1/2 p-3 sm:p-4 ${
-                  selectedMethod === "Bank"
-                    ? "outline outline-[2px] outline-[--main]"
-                    : "outline outline-[1px] outline-r-0 outline-[--secondary]"
-                } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
+                className={`w-full sm:w-1/2 p-3 sm:p-4 ${selectedMethod === "Bank"
+                  ? "outline outline-[2px] outline-[--main]"
+                  : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+                  } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
               >
                 <img
                   src={banklogo}
@@ -352,11 +387,10 @@ function MainPage({ setTransactionId }) {
                     <div>
                       <div
                         onClick={() => setSelectedUPIMethod("viaQR")}
-                        className={`p-2 border-l-[6px] flex items-center gap-2 cursor-pointer ${
-                          selectedUPIMethod === "viaQR"
-                            ? "bg-white border-[--main] text-black"
-                            : "bg-[--grayBg] border-[gray-900] text-gray-700"
-                        }`}
+                        className={`p-2 border-l-[6px] border-b-2 border-gray-300 flex items-center gap-2 cursor-pointer ${selectedUPIMethod === "viaQR"
+                          ? "bg-white border-[--main] text-black"
+                          : "bg-[--grayBg] border-[gray-900] text-gray-700"
+                          }`}
                       >
                         <img src={viaQr} alt="Via QR" className="w-8 h-8" />
                         <p className="font-bold text-[19px]">UPI</p>
@@ -574,6 +608,11 @@ function MainPage({ setTransactionId }) {
                           </span>
                           <span className="text-[14px] font-[500]">
                             {bank?.bankName}
+                            {!copyBankName ? (
+                              <FaRegCopy className="inline-block mt-[-2px] ms-[15px] cursor-pointer" onClick={() => fn_copy("copyBankName", bank?.bankName)} />
+                            ) : (
+                              <TiTick className="inline-block mt-[-2px] ms-[15px] scale-[1.2] cursor-pointer" />
+                            )}
                           </span>
 
                           <span className="text-[16px] font-[700] text-gray-700">
@@ -581,6 +620,11 @@ function MainPage({ setTransactionId }) {
                           </span>
                           <span className="text-[14px] font-[500]">
                             {bank?.accountHolderName}
+                            {!copyHolderName ? (
+                              <FaRegCopy className="inline-block mt-[-2px] ms-[15px] cursor-pointer" onClick={() => fn_copy("copyHolderName", bank?.accountHolderName)} />
+                            ) : (
+                              <TiTick className="inline-block mt-[-2px] ms-[15px] scale-[1.2] cursor-pointer" />
+                            )}
                           </span>
 
                           <span className="text-[16px] font-[700] text-gray-700">
@@ -588,21 +632,30 @@ function MainPage({ setTransactionId }) {
                           </span>
                           <span className="text-[14px] font-[500]">
                             {bank?.accountNo}
+                            {!copyAccount ? (
+                              <FaRegCopy className="inline-block mt-[-2px] ms-[15px] cursor-pointer" onClick={() => fn_copy("copyAccount", bank?.accountNo)} />
+                            ) : (
+                              <TiTick className="inline-block mt-[-2px] ms-[15px] scale-[1.2] cursor-pointer" />
+                            )}
                           </span>
 
                           <span className="text-[16px] font-[700] text-gray-700">
-                            IBAN:
+                            IFSC:
                           </span>
                           <span className="text-[14px] font-[500] break-words">
                             {bank?.iban}
+                            {!copyIban ? (
+                              <FaRegCopy className="inline-block mt-[-2px] ms-[15px] cursor-pointer" onClick={() => fn_copy("copyIban", bank?.iban)} />
+                            ) : (
+                              <TiTick className="inline-block mt-[-2px] ms-[15px] scale-[1.2] cursor-pointer" />
+                            )}
                           </span>
                         </div>
                       </div>
 
                       <div
-                        className={`flex items-center space-x-3 sm:space-x-1 ${
-                          bank?.image ? "mb-2" : "mt-1 mb-2"
-                        }`}
+                        className={`flex items-center space-x-3 sm:space-x-1 ${bank?.image ? "mb-2" : "mt-1 mb-2"
+                          }`}
                       >
                         <img
                           src={attention}

@@ -4,21 +4,45 @@ import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
 import Footer from "../../Components/Footer/Footer";
 import { useNavigate } from "react-router-dom";
 
-const PaymentDone = ({ transactionId }) => {
+const PaymentDone = ({ transactionId, amount, username, site }) => {
   const navigate = useNavigate();
   const containerHeight = window.innerHeight - 66 - 48;
+
+  // useEffect(() => {
+  //   if (transactionId) {
+  //     const timer = setTimeout(() => {
+  //       const message = encodeURIComponent(`Transaction ${transactionId} uploaded`);
+  //       const whatsappUrl = `https://api.whatsapp.com/send?phone=+923096175228&text=${message}`;
+  //       window.open(whatsappUrl, "_blank");
+  //     }, 5000);
+
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [transactionId]);
+
   useEffect(() => {
-    window.scroll(0, 0);
+    if(!amount || amount === ""){
+      return window.location.href = "/";
+    }
     const timer = setTimeout(() => {
-      window.location.replace("https://dial4bet.com");
-    }, 5000); 
+      const message = encodeURIComponent(`Username: ${username}\nTransaction ID: ${transactionId}\nWebsite: ${site}\nAmount: ${amount}`);
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=+919643242280&text=${message}`;
+      window.open(whatsappUrl, "_blank");
+    }, 5000);
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 7000);
+
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, []);
 
   return (
     <>
       <Header />
-      <div className="relative flex flex-col items-center justify-center px-4" style={{ minHeight: `${containerHeight}px` }}>
+      <div
+        className="relative flex flex-col items-center justify-center px-4"
+        style={{ minHeight: `${containerHeight}px` }}
+      >
         <div className="w-full max-w-4xl p-5 text-center rounded-lg">
           <div className="flex justify-center mb-4 mt-[-20px]">
             <div>
@@ -43,7 +67,10 @@ const PaymentDone = ({ transactionId }) => {
             to your wallet.
           </p>
 
-          <button onClick={() => window.location.replace("https://dial4bet.com")} className="w-3/4 md:w-1/4 bg-[--main] font-[500] mt-3 text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none">
+          <button
+            onClick={() => window.location.replace("https://dial4bet.com")}
+            className="w-3/4 md:w-1/4 bg-[--main] font-[500] mt-3 text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none"
+          >
             Return to App
           </button>
         </div>

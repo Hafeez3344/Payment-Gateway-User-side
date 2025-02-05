@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ColorRing } from "react-loader-spinner";
 import attention from "../../assets/attention.gif";
@@ -6,6 +6,8 @@ import cloudupload from "../../assets/cloudupload.svg";
 
 import { createWorker } from "tesseract.js";
 import { BACKEND_URL, fn_uploadTransactionApi } from "../../api/api";
+import { FaRegCopy } from "react-icons/fa6";
+import { TiTick } from "react-icons/ti";
 
 function UPIMethod({
   setTransactionId,
@@ -24,6 +26,7 @@ function UPIMethod({
   const [imageLoader, setImageLoader] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [processingError, setProcessingError] = useState("");
+  const [copyURL, setCopyUPI] = useState(false);
 
   console.log("UPI username ", username);
 
@@ -92,7 +95,7 @@ function UPIMethod({
     if (type && site) {
       formData.append("type", type);
       formData.append("site", site);
-    }else{
+    } else {
       formData.append("type", "manual");
     }
     const response = await fn_uploadTransactionApi(formData, username);
@@ -107,6 +110,24 @@ function UPIMethod({
       }
     } else {
       alert(response?.message || "Something Went Wrong");
+    }
+  };
+
+  useEffect(() => {
+    if (copyURL) {
+      setTimeout(() => setCopyUPI(false), 1000);
+    }
+  }, [copyURL]);
+
+  const fn_copyURL = (text) => {
+    if (text) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+          setCopyUPI(true);
+        })
+        .catch((err) => {
+          console.error("Failed to copy text:", err);
+        });
     }
   };
 
@@ -197,6 +218,11 @@ function UPIMethod({
                     </p>
                     <p className="text-[15px]">
                       <span className="font-[500]">UPI ID:</span> {bank?.iban}
+                      {!copyURL ? (
+                        <FaRegCopy className="inline-block mt-[-2px] ms-[15px] cursor-pointer" onClick={() => fn_copyURL(bank?.iban)} />
+                      ) : (
+                        <TiTick className="inline-block mt-[-2px] ms-[15px] scale-[1.2] cursor-pointer" />
+                      )}
                     </p>
                   </div>
                 </div>
@@ -215,9 +241,8 @@ function UPIMethod({
               </div>
             )}
             <div
-              className={`flex items-center ${
-                bank?.image ? "my-[18px]" : "-mt-[17px] mb-[16px]"
-              }`}
+              className={`flex items-center ${bank?.image ? "my-[18px]" : "-mt-[17px] mb-[16px]"
+                }`}
             >
               <img
                 src={attention}
