@@ -8,6 +8,7 @@ import { createWorker } from "tesseract.js";
 import { BACKEND_URL, fn_uploadTransactionApi } from "../../api/api";
 import { FaRegCopy } from "react-icons/fa6";
 import { TiTick } from "react-icons/ti";
+import { IoCamera } from "react-icons/io5";
 
 function UPIMethod({
   setTransactionId,
@@ -313,6 +314,12 @@ function UPIMethod({
                 colors={["#000000", "#000000", "#000000", "#000000", "#000000"]}
               />
             )}
+          </div>
+          <div className="flex sm:hidden px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto">
+            <IoCamera className="scale-[1.3] me-[10px]" />
+            <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
+              Capture Image
+            </span>
           </div>
           <input
             type="text"

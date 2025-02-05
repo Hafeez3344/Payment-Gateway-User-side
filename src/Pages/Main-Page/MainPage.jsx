@@ -25,6 +25,7 @@ import { FaExclamationCircle } from "react-icons/fa";
 import RefreshPage from "../Refresh-Page/RefreshPage";
 import { FaRegCopy } from "react-icons/fa6";
 import { TiTick } from "react-icons/ti";
+import { IoCamera } from "react-icons/io5";
 
 function MainPage({ setTransactionId }) {
   const navigate = useNavigate();
@@ -711,6 +712,12 @@ function MainPage({ setTransactionId }) {
                               ]}
                             />
                           )}
+                        </div>
+                        <div className="flex sm:hidden px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer w-full items-center justify-center text-gray-700 sm:w-auto">
+                          <IoCamera className="scale-[1.3] me-[10px]" />
+                          <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
+                            Capture Image
+                          </span>
                         </div>
                         <input
                           type="text"
