@@ -1,12 +1,14 @@
-// import React, { useState } from "react";
-// import Qrcode from "../../assets/Qrcode.svg";
+// import React, { useEffect, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { ColorRing } from "react-loader-spinner";
 // import attention from "../../assets/attention.gif";
 // import cloudupload from "../../assets/cloudupload.svg";
 
 // import { createWorker } from "tesseract.js";
-// import { fn_uploadTransactionApi } from "../../api/api";
+// import { BACKEND_URL, fn_uploadTransactionApi } from "../../api/api";
+// import { FaRegCopy } from "react-icons/fa6";
+// import { TiTick } from "react-icons/ti";
+// import { IoCamera } from "react-icons/io5";
 
 // function UPIMethod({
 //   setTransactionId,
@@ -16,6 +18,8 @@
 //   tax,
 //   total,
 //   username,
+//   type,
+//   site
 // }) {
 //   const navigate = useNavigate();
 //   const [utr, setUtr] = useState("");
@@ -23,6 +27,7 @@
 //   const [imageLoader, setImageLoader] = useState(false);
 //   const [selectedImage, setSelectedImage] = useState(null);
 //   const [processingError, setProcessingError] = useState("");
+//   const [copyURL, setCopyUPI] = useState(false);
 
 //   console.log("UPI username ", username);
 
@@ -88,6 +93,12 @@
 //     formData.append("total", total);
 //     formData.append("website", window.location.origin);
 //     formData.append("bankId", bank?._id);
+//     if (type && site) {
+//       formData.append("type", type);
+//       formData.append("site", site);
+//     } else {
+//       formData.append("type", "manual");
+//     }
 //     const response = await fn_uploadTransactionApi(formData, username);
 //     if (response?.status) {
 //       if (response?.data?.status === "ok") {
@@ -103,24 +114,124 @@
 //     }
 //   };
 
+//   useEffect(() => {
+//     if (copyURL) {
+//       setTimeout(() => setCopyUPI(false), 1000);
+//     }
+//   }, [copyURL]);
+
+//   const fn_copyURL = (text) => {
+//     if (text) {
+//       navigator.clipboard.writeText(text)
+//         .then(() => {
+//           setCopyUPI(true);
+//         })
+//         .catch((err) => {
+//           console.error("Failed to copy text:", err);
+//         });
+//     }
+//   };
+
 //   return (
 //     <div className="rounded-tr-md rounded-br-md  flex flex-col">
 //       {/* first-section */}
-//       <div className="flex flex-col items-start">
+//       {/* <div className="flex flex-col items-start">
 //         {selectedUPIMethod === "viaQR" ? (
 //           <div>
+//             {bank?.image ? (
+//               <>
+//                 <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
+//                   Scan to Pay
+//                 </p>
+//                 <div className="flex gap-[30px] items-center">
+//                   <img
+//                     src={`${BACKEND_URL}/${bank?.image}`}
+//                     alt="QR Code"
+//                     className="w-[95px] sm:w-[110px]"
+//                   />
+//                   <div className="mb-4">
+//                     <p className="mb-1 flex items-center gap-[4px]">
+//                       <span className="text-[16px] font-[700]">Scan and Pay</span>{" "}
+//                       <span className="text-[17px] font-[700] text-[--main] mb-[-2px]">
+//                         ₹{total}
+//                       </span>
+//                     </p>
+//                     <p className="text-[15px]">
+//                       <span className="font-[500]">UPI ID:</span> {bank?.iban}
+//                     </p>
+//                   </div>
+//                 </div>
+//               </>
+//             ) : null}
+//             <div className="flex items-center my-[18px]">
+//               <img
+//                 src={attention}
+//                 alt="Attention Sign"
+//                 className="w-12 sm:w-16 lg:w-[90px] mb-2 sm:mb-0 ml-[-22px]"
+//               />
+//               <p className="italic text-gray-500 text-[15px]">
+//                 After transfer the payment in the UPI <br /> Account, please
+//                 attach the receipt below.
+//               </p>
+//             </div>
+//           </div>
+//         ) : (
+//           <div className="flex flex-col items-center sm:items-start justify-center w-full">
 //             <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
 //               Scan to Pay
 //             </p>
-//             <div className="flex gap-[30px] items-center">
-//               <img
-//                 src={Qrcode}
-//                 alt="QR Code"
-//                 className="w-[95px] sm:w-[110px]"
-//               />
+//             <input
+//               type="text"
+//               placeholder="Enter UPI ID"
+//               className="w-[300px] sm:w-[450px] h-[45px] border px-[20px] rounded-md focus:outline-none text-[14px] mb-4"
+//             />
+//             <button
+//               onClick={() => navigate("/waiting-for-upi-approval")}
+//               className="w-[300px] sm:w-[450px] bg-[--main] font-[500] text-[15px] h-[45px] text-white rounded-md"
+//             >
+//               Pay Now
+//             </button>
+//           </div>
+//         )}
+//       </div> */}
+//       <div className="flex flex-col items-start">
+//         {selectedUPIMethod === "viaQR" ? (
+//           <div>
+//             {bank?.image ? (
+//               <>
+//                 <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
+//                   Scan to Pay
+//                 </p>
+//                 <div className="flex gap-[30px] items-center">
+//                   <img
+//                     src={`${BACKEND_URL}/${bank?.image}`}
+//                     alt="QR Code"
+//                     className="w-[95px] sm:w-[110px]"
+//                   />
+//                   <div className="mb-4">
+//                     <p className="mb-1 flex items-center gap-[4px]">
+//                       <span className="text-[16px] font-[700]">
+//                         Scan and Pay
+//                       </span>{" "}
+//                       <span className="text-[17px] font-[700] text-[--main] mb-[-2px]">
+//                         ₹{total}
+//                       </span>
+//                     </p>
+//                     <p className="text-[15px]">
+//                       <span className="font-[500]">UPI ID:</span> {bank?.iban}
+//                       {!copyURL ? (
+//                         <FaRegCopy className="inline-block mt-[-2px] ms-[15px] cursor-pointer" onClick={() => fn_copyURL(bank?.iban)} />
+//                       ) : (
+//                         <TiTick className="inline-block mt-[-2px] ms-[15px] scale-[1.2] cursor-pointer" />
+//                       )}
+//                     </p>
+//                   </div>
+//                 </div>
+//               </>
+//             ) : (
 //               <div className="mb-4">
 //                 <p className="mb-1 flex items-center gap-[4px]">
-//                   <span className="text-[16px] font-[700]">Scan and Pay</span>{" "}
+//                   <span className="text-[16px] font-[700]">Pay</span>{" "}
 //                   <span className="text-[17px] font-[700] text-[--main] mb-[-2px]">
 //                     ₹{total}
 //                   </span>
@@ -129,8 +240,11 @@
 //                   <span className="font-[500]">UPI ID:</span> {bank?.iban}
 //                 </p>
 //               </div>
-//             </div>
-//             <div className="flex items-center my-[18px]">
+//             )}
+//             <div
+//               className={`flex items-center ${bank?.image ? "my-[18px]" : "-mt-[17px] mb-[16px]"
+//                 }`}
+//             >
 //               <img
 //                 src={attention}
 //                 alt="Attention Sign"
@@ -172,13 +286,17 @@
 //                 onChange={(e) => fn_selectImage(e)}
 //               />
 //               <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer flex items-center justify-center text-gray-700 w-[120px] sm:w-auto">
-//               <img src={cloudupload} alt="Upload" className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-//                 <span className="text-gray-400 text-sm sm:text-base font-[400]">
+//                 <img
+//                   src={cloudupload}
+//                   alt="Upload"
+//                   className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"
+//                 />
+//                 <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
 //                   Upload File
 //                 </span>
 //               </div>
 //             </label>
-//             <p className="text-[14px] font-[600] text-nowrap">
+//             <p className="text-[14px] font-[600]">
 //               {!selectedImage ? (
 //                 <span>Attach transaction slip here</span>
 //               ) : (
@@ -196,6 +314,12 @@
 //                 colors={["#000000", "#000000", "#000000", "#000000", "#000000"]}
 //               />
 //             )}
+//           </div>
+//           <div className="flex sm:hidden px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto">
+//             <IoCamera className="scale-[1.3] me-[10px]" />
+//             <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
+//               Capture Image
+//             </span>
 //           </div>
 //           <input
 //             type="text"

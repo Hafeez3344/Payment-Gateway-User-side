@@ -35,7 +35,7 @@ const Information = ({ savedUsername, savedSite, savedAmount }) => {
     savedSite(website);
     savedAmount(amount);
     navigate(`/payment?username=${username}&amount=${amount}&type=direct&site=${website}`);
-    // window.location.href = `/payment?username=${username}&amount=${amount}&type=direct&site=${website}`;
+    // window.location.href = /payment?username=${username}&amount=${amount}&type=direct&site=${website};
   }
 
   return (
@@ -43,7 +43,7 @@ const Information = ({ savedUsername, savedSite, savedAmount }) => {
       <form className="flex-1 flex flex-col items-center justify-center px-[15px]" onSubmit={fn_submit}>
         <div className="w-full flex justify-center">
           <div className="sm:w-[350px] sm:h-[350px] overflow-hidden flex justify-center items-center p-[30px]">
-            <img alt="" src={websiteLogo !== "" ? `${BACKEND_URL}/${websiteLogo}` : frontImage} className="object-center w-full" />
+            <img alt="" src={websiteLogo !== "" && `${BACKEND_URL}/${websiteLogo}`} className="object-center w-full" />
           </div>
         </div>
         <div className="w-full max-w-[408px] border-y border-r border-[#9B9B9B] rounded-full flex">

@@ -19,7 +19,7 @@ function UPIMethod({
   total,
   username,
   type,
-  site
+  site,
 }) {
   const navigate = useNavigate();
   const [utr, setUtr] = useState("");
@@ -81,6 +81,51 @@ function UPIMethod({
     }
   };
 
+  const handleCameraCapture = async (e) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+
+    setSelectedImage(file);
+    setImageLoader(true);
+    setProcessingError("");
+    setUtr("");
+
+    const worker = await createWorker("eng");
+
+    try {
+      const ret = await worker.recognize(file);
+      const allLines = ret?.data?.lines || [];
+      const specificText = allLines.filter((line) => {
+        return line.text?.split(/\s+/).some((word) => {
+          const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
+          return isValidWord && word.length > 7;
+        });
+      });
+
+      const mostSpecificText = specificText
+        .map((text) => {
+          const matchedWord = text?.words?.find((word) => {
+            const wordText = word?.text || "";
+            const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
+            return isAlphanumeric && wordText.length > 7;
+          });
+          return matchedWord || null;
+        })
+        .filter(Boolean);
+
+      const autoUTR = mostSpecificText?.[0]?.text || "";
+      setUtr(autoUTR);
+    } catch (error) {
+      console.error("Receipt processing error:", error);
+      setProcessingError(
+        "Error processing receipt. Please enter UTR manually."
+      );
+    } finally {
+      setImageLoader(false);
+      await worker.terminate();
+    }
+  };
+
   const fn_QRsubmit = async () => {
     if (!selectedImage) return alert("Upload Transaction Slip");
     if (utr === "") return alert("Enter UTR Number");
@@ -122,7 +167,8 @@ function UPIMethod({
 
   const fn_copyURL = (text) => {
     if (text) {
-      navigator.clipboard.writeText(text)
+      navigator.clipboard
+        .writeText(text)
         .then(() => {
           setCopyUPI(true);
         })
@@ -220,7 +266,10 @@ function UPIMethod({
                     <p className="text-[15px]">
                       <span className="font-[500]">UPI ID:</span> {bank?.iban}
                       {!copyURL ? (
-                        <FaRegCopy className="inline-block mt-[-2px] ms-[15px] cursor-pointer" onClick={() => fn_copyURL(bank?.iban)} />
+                        <FaRegCopy
+                          className="inline-block mt-[-2px] ms-[15px] cursor-pointer"
+                          onClick={() => fn_copyURL(bank?.iban)}
+                        />
                       ) : (
                         <TiTick className="inline-block mt-[-2px] ms-[15px] scale-[1.2] cursor-pointer" />
                       )}
@@ -242,8 +291,9 @@ function UPIMethod({
               </div>
             )}
             <div
-              className={`flex items-center ${bank?.image ? "my-[18px]" : "-mt-[17px] mb-[16px]"
-                }`}
+              className={`flex items-center ${
+                bank?.image ? "my-[18px]" : "-mt-[17px] mb-[16px]"
+              }`}
             >
               <img
                 src={attention}
@@ -282,7 +332,7 @@ function UPIMethod({
             <label className="w-[150px]">
               <input
                 type="file"
-                className="cursor-pointer hidden "
+                className="cursor-pointer hidden"
                 onChange={(e) => fn_selectImage(e)}
               />
               <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer flex items-center justify-center text-gray-700 w-[120px] sm:w-auto">
@@ -315,12 +365,21 @@ function UPIMethod({
               />
             )}
           </div>
-          <div className="flex sm:hidden px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto">
-            <IoCamera className="scale-[1.3] me-[10px]" />
-            <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
-              Capture Image
-            </span>
-          </div>
+          <label className="flex sm:hidden">
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleCameraCapture}
+            />
+            <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto flex">
+              <IoCamera className="scale-[1.3] me-[10px]" />
+              <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
+                Capture Image
+              </span>
+            </div>
+          </label>
           <input
             type="text"
             value={utr}
