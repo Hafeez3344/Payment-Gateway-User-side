@@ -29,15 +29,18 @@ export const fn_uploadTransactionApi = async (formData, username) => {
         const response = await axios.post(`${BACKEND_URL}/ledger/create`, formData);
         if (response?.status === 200) {
             if (response?.data?.status === "ok") {
-                return { status: true, data: response?.data }
+                return { status: true, data: response?.data, statusCode: 200 }
             }
         }
     } catch (error) {
         console.log("fn_uploadTransactionApi", error);
         if (error?.status === 400) {
-            return { status: false, message: error?.response?.data?.message || "Something went wrong" }
+            return { status: false, message: error?.response?.data?.message || "Something went wrong", statusCode: 400 }
         }
-        return { status: false, message: "Network error" };
+        if (error?.status === 401) {
+            return { status: false, message: error?.response?.data?.message || "Something went wrong", statusCode: 401 }
+        }
+        return { status: false, message: "Network error", statusCode: 500 };
     }
 }
 

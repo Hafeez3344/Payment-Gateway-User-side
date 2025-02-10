@@ -5,29 +5,24 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import Layout from "../../Layout/Layout";
+import { Banks } from "../../json-data/banks";
 import UPIMethod from "../../Components/UPI-Method/UPIMethod";
 import OrderSummary from "../../Components/OrderSummary/OrderSummary";
-import {
-  BACKEND_URL,
-  fn_getBanksByTabApi,
-  fn_getWebInfoApi,
-  fn_uploadTransactionApi,
-} from "../../api/api";
-import { Banks } from "../../json-data/banks";
+import { BACKEND_URL, fn_getBanksByTabApi, fn_getWebInfoApi, fn_uploadTransactionApi } from "../../api/api";
 
+import { TiTick } from "react-icons/ti";
+import { IoCamera } from "react-icons/io5";
 import viaQr from "../../assets/viaQr.svg";
-import arrow from "../../assets/arrow.svg";
+import { FaRegCopy } from "react-icons/fa6";
 import upilogo from "../../assets/upilogo.png";
 import banklogo from "../../assets/banklogo.svg";
 import attention from "../../assets/attention.gif";
-import cloudupload from "../../assets/cloudupload.svg";
 import { FaExclamationCircle } from "react-icons/fa";
 import RefreshPage from "../Refresh-Page/RefreshPage";
-import { FaRegCopy } from "react-icons/fa6";
-import { TiTick } from "react-icons/ti";
-import { IoCamera } from "react-icons/io5";
+import cloudupload from "../../assets/cloudupload.svg";
 
 function MainPage({ setTransactionId }) {
+
   const navigate = useNavigate();
   const location = useLocation();
   const [bank, setBank] = useState({});
@@ -251,6 +246,9 @@ function MainPage({ setTransactionId }) {
         alert(response?.message || "Something Went Wrong");
       }
     } else {
+      // if(response?.statusCode === 401){
+      //   return alert("==============")
+      // }
       alert(response?.message || "Something Went Wrong");
     }
   };

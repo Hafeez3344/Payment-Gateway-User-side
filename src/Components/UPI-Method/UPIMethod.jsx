@@ -29,8 +29,6 @@ function UPIMethod({
   const [processingError, setProcessingError] = useState("");
   const [copyURL, setCopyUPI] = useState(false);
 
-  console.log("UPI username ", username);
-
   const fn_selectImage = async (e) => {
     const file = e?.target?.files?.[0];
     if (!file) return;
@@ -155,6 +153,9 @@ function UPIMethod({
         alert(response?.message || "Something Went Wrong");
       }
     } else {
+      // if(response?.statusCode === 401){
+      //   return alert("==============")
+      // }
       alert(response?.message || "Something Went Wrong");
     }
   };
