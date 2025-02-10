@@ -41,13 +41,11 @@ const Information = ({ savedUsername, savedSite, savedAmount }) => {
   return (
     <Layout>
       <form className="flex-1 flex flex-col items-center justify-center px-[15px]" onSubmit={fn_submit}>
-        {websiteLogo && websiteLogo !== "" && (
-          <div className="w-full flex justify-center">
-            <div className="sm:w-[350px] sm:h-[350px] overflow-hidden flex justify-center items-center p-[30px]">
-              <img alt="" src={websiteLogo !== "" && `${BACKEND_URL}/${websiteLogo}`} className="object-center w-full" />
-            </div>
+        <div className="w-full flex justify-center">
+          <div className="sm:w-[350px] sm:h-[350px] overflow-hidden flex justify-center items-center p-[30px]">
+            <img alt="" src={websiteLogo !== "" && `${BACKEND_URL}/${websiteLogo}`} className="object-center w-full" />
           </div>
-        )}
+        </div>
         <div className="w-full max-w-[408px] border-y border-r border-[#9B9B9B] rounded-full flex">
           <div className="h-[56px] min-h-[56px] w-[56px] min-w-[56px] rounded-full flex justify-center items-center outline outline-[1px] outline-[#9B9B9B]">
             <FaUser className="text-[20px] mt-[1px]" />
