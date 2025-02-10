@@ -41,7 +41,7 @@ const Information = ({ savedUsername, savedSite, savedAmount }) => {
   return (
     <Layout>
       <form className="flex-1 flex flex-col items-center justify-center px-[15px]" onSubmit={fn_submit}>
-        {websiteLogo !== "" && (
+        {websiteLogo && websiteLogo !== "" && (
           <div className="w-full flex justify-center">
             <div className="sm:w-[350px] sm:h-[350px] overflow-hidden flex justify-center items-center p-[30px]">
               <img alt="" src={websiteLogo !== "" && `${BACKEND_URL}/${websiteLogo}`} className="object-center w-full" />
