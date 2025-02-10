@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { ColorRing } from "react-loader-spinner";
 import attention from "../../assets/attention.gif";
 import cloudupload from "../../assets/cloudupload.svg";
+import { Modal } from "antd";
+import cancel from "../../assets/cancel.gif";
 
 import { createWorker } from "tesseract.js";
 import { BACKEND_URL, fn_uploadTransactionApi } from "../../api/api";
@@ -28,6 +30,7 @@ function UPIMethod({
   const [selectedImage, setSelectedImage] = useState(null);
   const [processingError, setProcessingError] = useState("");
   const [copyURL, setCopyUPI] = useState(false);
+  const [isDuplicateModal, setIsDuplicateModal] = useState(false);
 
   const fn_selectImage = async (e) => {
     const file = e?.target?.files?.[0];
@@ -128,6 +131,7 @@ function UPIMethod({
     if (!selectedImage) return alert("Upload Transaction Slip");
     if (utr === "") return alert("Enter UTR Number");
     if (!checkBox) return alert("Verify the Uploaded Receipt Checkbox");
+
     const formData = new FormData();
     formData.append("image", selectedImage);
     formData.append("utr", utr);
@@ -142,6 +146,7 @@ function UPIMethod({
     } else {
       formData.append("type", "manual");
     }
+
     const response = await fn_uploadTransactionApi(formData, username);
     if (response?.status) {
       if (response?.data?.status === "ok") {
@@ -149,13 +154,14 @@ function UPIMethod({
         setSelectedImage({});
         setTransactionId(response?.data?.data?.trnNo);
         navigate("/payment-done");
+      } else if (response?.message?.toLowerCase().includes("unique utr")) {
+        setIsDuplicateModal(true);
       } else {
         alert(response?.message || "Something Went Wrong");
       }
+    } else if (response?.message?.toLowerCase().includes("unique utr")) {
+      setIsDuplicateModal(true);
     } else {
-      // if(response?.statusCode === 401){
-      //   return alert("==============")
-      // }
       alert(response?.message || "Something Went Wrong");
     }
   };
@@ -409,6 +415,37 @@ function UPIMethod({
           </button>
         </div>
       )}
+      <Modal
+        title="Duplicate Transaction"
+        open={isDuplicateModal}
+        onOk={() => setIsDuplicateModal(false)}
+        onCancel={() => setIsDuplicateModal(false)}
+        centered
+      >
+        <div className="py-4 flex flex-col items-center">
+          {/* Cancel Animation */}
+          <div className="flex justify-center mb-6">
+            <div className="bg-red-500 rounded-full p-2">
+              <img
+                src={cancel}
+                alt="Cancel Icon"
+                className="w-24 sm:w-28 h-24 sm:h-28 object-contain"
+              />
+            </div>
+          </div>
+
+          {/* Error Message */}
+          <p className="text-xl font-bold text-gray-800 mb-4">
+            OOPS! Duplicate UTR
+          </p>
+          <p className="text-red-500 font-medium text-center">
+            This UTR number has already been used!
+          </p>
+          <p className="mt-2 text-gray-500 text-center">
+            Please enter a unique UTR number for your transaction.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 }
