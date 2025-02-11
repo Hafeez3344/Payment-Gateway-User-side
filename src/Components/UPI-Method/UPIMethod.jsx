@@ -255,14 +255,16 @@ function UPIMethod({
                 <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
                   Scan to Pay
                 </p>
-                <div className="flex gap-[30px] items-center">
-                  <img
-                    src={`${BACKEND_URL}/${bank?.image}`}
-                    alt="QR Code"
-                    className="w-[95px] sm:w-[110px]"
-                  />
-                  <div className="mb-4">
-                    <p className="mb-1 flex items-center gap-[4px]">
+                <div className="flex sm:flex-row flex-col gap-[30px] items-center sm:items-start w-full">
+                  <div className="flex flex-col items-center sm:items-start w-full sm:w-auto">
+                    <img
+                      src={`${BACKEND_URL}/${bank?.image}`}
+                      alt="QR Code"
+                      className="w-full sm:w-[120px]"
+                    />
+                  </div>
+                  <div className="mb-4 text-center sm:text-left">
+                    <p className="mb-1 flex items-center justify-center sm:justify-start gap-[4px]">
                       <span className="text-[16px] font-[700]">
                         Scan and Pay
                       </span>{" "}

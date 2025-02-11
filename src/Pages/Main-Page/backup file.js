@@ -3,12 +3,18 @@
 // import { ColorRing } from "react-loader-spinner";
 // import React, { useEffect, useState } from "react";
 // import { useLocation, useNavigate } from "react-router-dom";
+// import { Modal } from "antd";
 
 // import Layout from "../../Layout/Layout";
 // import { Banks } from "../../json-data/banks";
 // import UPIMethod from "../../Components/UPI-Method/UPIMethod";
 // import OrderSummary from "../../Components/OrderSummary/OrderSummary";
-// import { BACKEND_URL, fn_getBanksByTabApi, fn_getWebInfoApi, fn_uploadTransactionApi } from "../../api/api";
+// import {
+//   BACKEND_URL,
+//   fn_getBanksByTabApi,
+//   fn_getWebInfoApi,
+//   fn_uploadTransactionApi,
+// } from "../../api/api";
 
 // import { TiTick } from "react-icons/ti";
 // import { IoCamera } from "react-icons/io5";
@@ -20,9 +26,9 @@
 // import { FaExclamationCircle } from "react-icons/fa";
 // import RefreshPage from "../Refresh-Page/RefreshPage";
 // import cloudupload from "../../assets/cloudupload.svg";
+// import cancel from "../../assets/cancel.gif";
 
 // function MainPage({ setTransactionId }) {
-
 //   const navigate = useNavigate();
 //   const location = useLocation();
 //   const [bank, setBank] = useState({});
@@ -46,6 +52,8 @@
 //   const [imageLoader, setImageLoader] = useState(false);
 //   const [selectedImage, setSelectedImage] = useState(null);
 //   const [processingError, setProcessingError] = useState("");
+
+//   const [isDuplicateModal, setIsDuplicateModal] = useState(false);
 
 //   const decrypt = (encryptedValue) => {
 //     try {
@@ -242,13 +250,14 @@
 //         setSelectedImage({});
 //         setTransactionId(response?.data?.data?.trnNo);
 //         navigate("/payment-done");
+//       } else if (response?.message?.toLowerCase().includes("unique utr")) {
+//         setIsDuplicateModal(true);
 //       } else {
 //         alert(response?.message || "Something Went Wrong");
 //       }
+//     } else if (response?.message?.toLowerCase().includes("unique utr")) {
+//       setIsDuplicateModal(true);
 //     } else {
-//       // if(response?.statusCode === 401){
-//       //   return alert("==============")
-//       // }
 //       alert(response?.message || "Something Went Wrong");
 //     }
 //   };
@@ -607,6 +616,38 @@
 //           </div>
 //         </main>
 //       </div>
+
+//       <Modal
+//         title="Duplicate Transaction"
+//         open={isDuplicateModal}
+//         onOk={() => setIsDuplicateModal(false)}
+//         onCancel={() => setIsDuplicateModal(false)}
+//         centered
+//       >
+//         <div className="py-4 flex flex-col items-center">
+//           {/* Cancel Animation */}
+//           <div className="flex justify-center mb-6">
+//             <div className="bg-red-500 rounded-full p-2">
+//               <img
+//                 src={cancel}
+//                 alt="Cancel Icon"
+//                 className="w-24 sm:w-28 h-24 sm:h-28 object-contain"
+//               />
+//             </div>
+//           </div>
+
+//           {/* Error Message */}
+//           <p className="text-xl font-bold text-gray-800 mb-4">
+//             OOPS! Duplicate UTR
+//           </p>
+//           <p className="text-red-500 font-medium text-center">
+//             This UTR number has already been used!
+//           </p>
+//           <p className="mt-2 text-gray-500 text-center">
+//             Please enter a unique UTR number for your transaction.
+//           </p>
+//         </div>
+//       </Modal>
 //     </Layout>
 //   );
 // }

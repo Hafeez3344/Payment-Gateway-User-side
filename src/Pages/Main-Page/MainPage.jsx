@@ -309,33 +309,33 @@ function MainPage({ setTransactionId }) {
         <main className="flex flex-col-reverse lg:flex-row gap-[60px] md:gap-2">
           <div className="w-full lg:w-[70%] max-w-[1000px] bg-white sm:px-6 lg:pe-[40px]">
             {/* Payment method tabs */}
-            <div className="flex flex-col sm:flex-row mb-8 sm:mb-12">
+            <div className="flex flex-row mb-8 sm:mb-12">
               <div
                 onClick={() => setSelectedMethod("UPI")}
-                className={`w-full sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${
+                className={`w-1/2 sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${
                   selectedMethod === "UPI"
                     ? "outline outline-[2px] outline-[--main]"
                     : "outline outline-[1px] outline-r-0 outline-[--secondary]"
-                } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
+                } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
               >
                 <img
                   src={upilogo}
                   alt="UPI Logo"
-                  className="w-24 h-24 sm:w-32 sm:h-32 lg:w-52 lg:h-52 object-contain"
+                  className="w-16 h-16 sm:w-32 sm:h-32 lg:w-52 lg:h-52 object-contain"
                 />
               </div>
               <div
                 onClick={() => setSelectedMethod("Bank")}
-                className={`w-full sm:w-1/2 p-3 sm:p-4 ${
+                className={`w-1/2 sm:w-1/2 p-3 sm:p-4 ${
                   selectedMethod === "Bank"
                     ? "outline outline-[2px] outline-[--main]"
                     : "outline outline-[1px] outline-r-0 outline-[--secondary]"
-                } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
+                } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
               >
                 <img
                   src={banklogo}
                   alt="Bank Transfer Logo"
-                  className="w-24 h-24 sm:w-32 sm:h-32 lg:w-60 lg:h-60 object-contain"
+                  className="w-16 h-16 sm:w-32 sm:h-32 lg:w-60 lg:h-60 object-contain"
                 />
               </div>
             </div>
