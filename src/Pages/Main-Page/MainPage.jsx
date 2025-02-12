@@ -305,8 +305,8 @@ function MainPage({ setTransactionId }) {
 
   return (
     <Layout>
-      <div className="w-full max-w-[1200px] mx-auto my-[30px] md:my-[100px] sm:my-[60px] px-4 sm:px-0 md:scale-[0.9]">
-        <main className="flex flex-col-reverse lg:flex-row gap-[60px] md:gap-2">
+      <div className="w-full max-w-[1200px] mx-auto my-[15px] md:my-[100px] sm:my-[60px] px-4 sm:px-0 md:scale-[0.9]">
+        <main className="flex flex-col-reverse lg:flex-row gap-[30px] md:gap-2">
           <div className="w-full lg:w-[70%] max-w-[1000px] bg-white sm:px-6 lg:pe-[40px]">
             {/* Payment method tabs */}
             <div className="flex flex-row mb-8 sm:mb-12">
