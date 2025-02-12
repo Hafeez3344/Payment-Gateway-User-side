@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 const PaymentDone = ({ transactionId, amount, username, site }) => {
   const navigate = useNavigate();
   const containerHeight = window.innerHeight - 66 - 48;
+  const phone = localStorage.getItem("phone");
 
   // useEffect(() => {
   //   if (transactionId) {
@@ -28,7 +29,7 @@ const PaymentDone = ({ transactionId, amount, username, site }) => {
     } else {
       const timer = setTimeout(() => {
         const message = encodeURIComponent(`Username: ${username}\nTransaction ID: ${transactionId}\nWebsite: ${site}\nAmount: ${amount}`);
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=+919643242280&text=${message}`;
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
         window.open(whatsappUrl, "_blank");
       }, 5000);
       setTimeout(() => {

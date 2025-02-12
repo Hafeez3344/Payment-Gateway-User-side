@@ -7,7 +7,7 @@ export const BACKEND_URL = "https://backend.royal247.org"
 export const fn_getBanksByTabApi = async (tab) => {
 
     try {
-        const response = await axios.get(`${BACKEND_URL}/bank/user?accountType=${tab}&website=${window.location.origin}`);
+        const response = await axios.get(`${BACKEND_URL}/bank/user?accountType=${tab}`);
         if (response?.status === 200) {
             if (response?.data?.status === "ok") {
                 return { status: true, data: response?.data?.data }

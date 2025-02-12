@@ -306,13 +306,13 @@ function MainPage({ setTransactionId }) {
   return (
     <Layout>
       <div className="w-full max-w-[1200px] mx-auto my-[30px] md:my-[100px] sm:my-[60px] px-4 sm:px-0 md:scale-[0.9]">
-        <main className="flex flex-col-reverse lg:flex-row gap-[60px] md:gap-2">
+        <main className="flex flex-col-reverse lg:flex-row gap-[30px] sm:gap-[60px] md:gap-2">
           <div className="w-full lg:w-[70%] max-w-[1000px] bg-white sm:px-6 lg:pe-[40px]">
             {/* Payment method tabs */}
             <div className="flex flex-row mb-8 sm:mb-12">
               <div
                 onClick={() => setSelectedMethod("UPI")}
-                className={`w-1/2 sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${
+                className={`w-1/2 sm:w-1/2 sm:max-w-[400px] p-0 sm:p-4 ${
                   selectedMethod === "UPI"
                     ? "outline outline-[2px] outline-[--main]"
                     : "outline outline-[1px] outline-r-0 outline-[--secondary]"
@@ -321,12 +321,12 @@ function MainPage({ setTransactionId }) {
                 <img
                   src={upilogo}
                   alt="UPI Logo"
-                  className="w-16 h-16 sm:w-32 sm:h-32 lg:w-52 lg:h-52 object-contain"
+                  className="w-20 h-20 sm:w-32 sm:h-32 lg:w-52 lg:h-52 object-contain"
                 />
               </div>
               <div
                 onClick={() => setSelectedMethod("Bank")}
-                className={`w-1/2 sm:w-1/2 p-3 sm:p-4 ${
+                className={`w-1/2 sm:w-1/2 p-0 sm:p-4 ${
                   selectedMethod === "Bank"
                     ? "outline outline-[2px] outline-[--main]"
                     : "outline outline-[1px] outline-r-0 outline-[--secondary]"
@@ -335,7 +335,7 @@ function MainPage({ setTransactionId }) {
                 <img
                   src={banklogo}
                   alt="Bank Transfer Logo"
-                  className="w-16 h-16 sm:w-32 sm:h-32 lg:w-60 lg:h-60 object-contain"
+                  className="w-20 h-20 sm:w-32 sm:h-32 lg:w-60 lg:h-60 object-contain"
                 />
               </div>
             </div>

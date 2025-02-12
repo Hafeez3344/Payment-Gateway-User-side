@@ -255,15 +255,15 @@ function UPIMethod({
                 <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
                   Scan to Pay
                 </p>
-                <div className="flex sm:flex-row flex-col gap-[30px] items-center sm:items-start w-full">
+                <div className="flex sm:flex-row flex-col gap-[30px] items-center sm:items-center w-full">
                   <div className="flex flex-col items-center sm:items-start w-full sm:w-auto">
                     <img
                       src={`${BACKEND_URL}/${bank?.image}`}
                       alt="QR Code"
-                      className="w-full sm:w-[120px]"
+                      className="w-full sm:w-[150px]"
                     />
                   </div>
-                  <div className="mb-4 text-center sm:text-left">
+                  <div className="mb-2 sm:mb-4 text-center sm:text-left">
                     <p className="mb-1 flex items-center justify-center sm:justify-start gap-[4px]">
                       <span className="text-[16px] font-[700]">
                         Scan and Pay
@@ -307,9 +307,9 @@ function UPIMethod({
               <img
                 src={attention}
                 alt="Attention Sign"
-                className="w-12 sm:w-16 lg:w-[90px] mb-2 sm:mb-0 ml-[-22px]"
+                className="w-16 lg:w-[90px] mb-2 sm:mb-0 ml-[-22px]"
               />
-              <p className="italic text-gray-500 text-[15px]">
+              <p className="italic text-gray-500 text-[15px] mt-[-8px] sm:mt-0">
                 After transfer the payment in the UPI <br /> Account, please
                 attach the receipt below.
               </p>

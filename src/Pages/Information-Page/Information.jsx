@@ -15,6 +15,7 @@ const Information = ({ savedUsername, savedSite, savedAmount }) => {
   const [amount, setAmount] = useState();
   const [website, setWebsite] = useState("");
   const [username, setUsername] = useState("");
+  const [websiteList, setWebsiteList] = useState([]);
 
   const [websiteLogo, setWebsiteLogo] = useState("");
 
@@ -22,11 +23,13 @@ const Information = ({ savedUsername, savedSite, savedAmount }) => {
     const response = await axios.get(`${BACKEND_URL}/merchant/getWebsite?website=${window.location.origin}`);
     if (response?.data?.status === "ok") {
       setWebsiteLogo(response?.data?.data?.image);
+      localStorage.setItem("phone", response?.data?.data?.phone);
     }
   }
 
   useEffect(() => {
     fn_getWesbiteDetails();
+    fn_getWebsiteList();
   }, []);
 
   const dummyWebsites = [
@@ -37,6 +40,13 @@ const Information = ({ savedUsername, savedSite, savedAmount }) => {
     "marketplace.io"
   ];
 
+  const fn_getWebsiteList = async () => {
+    const response = await axios.get(`${BACKEND_URL}/website/getAllWebsite/?website=${window.location.origin}`);
+    if (response?.data?.status === "ok") {
+      setWebsiteList(response?.data?.data);
+    }
+  }
+
   const fn_submit = (e) => {
     e.preventDefault();
     savedUsername(username);
@@ -44,16 +54,18 @@ const Information = ({ savedUsername, savedSite, savedAmount }) => {
     savedAmount(amount);
     navigate(`/payment?username=${username}&amount=${amount}&type=direct&site=${website}`);
     // window.location.href = /payment?username=${username}&amount=${amount}&type=direct&site=${website};
-  }
+  };
 
   return (
     <Layout>
       <form className="flex-1 flex flex-col items-center justify-center px-[15px]" onSubmit={fn_submit}>
-        <div className="w-full flex justify-center">
-          <div className="sm:w-[350px] sm:h-[350px] overflow-hidden flex justify-center items-center p-[30px]">
-            <img alt="" src={websiteLogo !== "" && `${BACKEND_URL}/${websiteLogo}`} className="object-center w-full" />
+        {websiteLogo && websiteLogo !== "" && (
+          <div className="w-full flex justify-center">
+            <div className="sm:w-[350px] sm:h-[350px] overflow-hidden flex justify-center items-center p-[30px]">
+              <img alt="" src={websiteLogo !== "" && `${BACKEND_URL}/${websiteLogo}`} className="object-center w-full" />
+            </div>
           </div>
-        </div>
+        )}
         <div className="w-full max-w-[408px] border-y border-r border-[#9B9B9B] rounded-full flex">
           <div className="h-[56px] min-h-[56px] w-[56px] min-w-[56px] rounded-full flex justify-center items-center outline outline-[1px] outline-[#9B9B9B]">
             <FaUser className="text-[20px] mt-[1px]" />
@@ -64,7 +76,7 @@ const Information = ({ savedUsername, savedSite, savedAmount }) => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter Username"
-              className="h-[50px] w-full text-center text-[15px] font-[500] focus:outline-none text-[#9B9B9B] placeholder:text-[#9B9B9B]"
+              className="h-[50px] w-full text-center text-[15px] font-[500] focus:outline-none text-black placeholder:text-[#9B9B9B]"
             />
           </div>
         </div>
@@ -77,12 +89,12 @@ const Information = ({ savedUsername, savedSite, savedAmount }) => {
               required
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
-              className="h-[50px] w-full text-center text-[15px] font-[500] focus:outline-none appearance-none bg-transparent text-[#9B9B9B] cursor-pointer"
+              className="h-[50px] w-full text-center text-[15px] font-[500] focus:outline-none appearance-none bg-transparent cursor-pointer"
             >
-              <option value="" className="text-[#9B9B9B]">Enter Website Name</option>
-              {dummyWebsites.map((site, index) => (
-                <option key={index} value={site} className="text-[#9B9B9B]">
-                  {site}
+              <option value="" disabled selected>Select Website</option>
+              {websiteList?.map((site, index) => (
+                <option key={index} value={site?.url}>
+                  {site?.url}
                 </option>
               ))}
             </select>
@@ -100,7 +112,7 @@ const Information = ({ savedUsername, savedSite, savedAmount }) => {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Enter Desired Amount"
-              className="h-[50px] w-full text-center text-[15px] font-[500] focus:outline-none text-[#9B9B9B] placeholder:text-[#9B9B9B]"
+              className="h-[50px] w-full text-center text-[15px] font-[500] focus:outline-none placeholder:text-[#9B9B9B]"
             />
           </div>
         </div>
