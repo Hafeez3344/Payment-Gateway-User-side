@@ -72,7 +72,11 @@ const PaymentDone = ({ transactionId, amount, username, site }) => {
           </p>
 
           <button
-            onClick={() => window.location.replace("https://dial4bet.com")}
+            onClick={() => {
+              const message = encodeURIComponent(`Username: ${username}\nTransaction ID: ${transactionId}\nWebsite: ${site}\nAmount: ${amount}`);
+              const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
+              window.open(whatsappUrl, "_blank");
+            }}
             className="w-3/4 md:w-1/4 bg-[--main] font-[500] mt-3 text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none"
           >
             Return to App
