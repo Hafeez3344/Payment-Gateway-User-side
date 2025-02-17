@@ -312,11 +312,10 @@ function MainPage({ setTransactionId }) {
             <div className="flex flex-row mb-8 sm:mb-12">
               <div
                 onClick={() => setSelectedMethod("UPI")}
-                className={`w-1/2 sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${
-                  selectedMethod === "UPI"
+                className={`w-1/2 sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${selectedMethod === "UPI"
                     ? "outline outline-[2px] outline-[--main]"
                     : "outline outline-[1px] outline-r-0 outline-[--secondary]"
-                } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
+                  } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
               >
                 <img
                   src={upilogo}
@@ -326,11 +325,10 @@ function MainPage({ setTransactionId }) {
               </div>
               <div
                 onClick={() => setSelectedMethod("Bank")}
-                className={`w-1/2 sm:w-1/2 p-3 sm:p-4 ${
-                  selectedMethod === "Bank"
+                className={`w-1/2 sm:w-1/2 p-3 sm:p-4 ${selectedMethod === "Bank"
                     ? "outline outline-[2px] outline-[--main]"
                     : "outline outline-[1px] outline-r-0 outline-[--secondary]"
-                } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
+                  } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
               >
                 <img
                   src={banklogo}
@@ -348,11 +346,10 @@ function MainPage({ setTransactionId }) {
                     <div>
                       <div
                         onClick={() => setSelectedUPIMethod("viaQR")}
-                        className={`p-2 border-l-[6px] border-b-2 border-gray-300 flex items-center gap-2 cursor-pointer ${
-                          selectedUPIMethod === "viaQR"
+                        className={`p-2 border-l-[6px] border-b-2 border-gray-300 flex items-center gap-2 cursor-pointer ${selectedUPIMethod === "viaQR"
                             ? "bg-white border-[--main] text-black"
                             : "bg-[--grayBg] border-[gray-900] text-gray-700"
-                        }`}
+                          }`}
                       >
                         <img src={viaQr} alt="Via QR" className="w-8 h-8" />
                         <p className="font-bold text-[19px]">UPI</p>
@@ -489,9 +486,8 @@ function MainPage({ setTransactionId }) {
                       </div>
 
                       <div
-                        className={`flex items-center space-x-3 sm:space-x-1 ${
-                          bank?.image ? "mb-2" : "mt-1 mb-2"
-                        }`}
+                        className={`flex items-center space-x-3 sm:space-x-1 ${bank?.image ? "mb-2" : "mt-1 mb-2"
+                          }`}
                       >
                         <img
                           src={attention}
@@ -548,13 +544,14 @@ function MainPage({ setTransactionId }) {
                             />
                           )}
                         </div>
-                        <label className="flex sm:hidden">
+                        <label className="flex sm:hidden" onClick={() => alert("Coming Soon")}>
                           <input
                             type="file"
                             accept="image/*"
                             capture="environment"
                             className="hidden"
                             onChange={(e) => fn_selectImage(e)}
+                            disabled
                           />
                           <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer w-full items-center justify-center text-gray-700 sm:w-auto flex">
                             <IoCamera className="scale-[1.3] me-[10px]" />

@@ -374,13 +374,14 @@ function UPIMethod({
               />
             )}
           </div>
-          <label className="flex sm:hidden">
+          <label className="flex sm:hidden" onClick={() => alert("Coming Soon")}>
             <input
               type="file"
               accept="image/*"
               capture="environment"
               className="hidden"
               onChange={handleCameraCapture}
+              disabled
             />
             <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto flex">
               <IoCamera className="scale-[1.3] me-[10px]" />

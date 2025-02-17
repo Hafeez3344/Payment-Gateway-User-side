@@ -3,6 +3,7 @@ import Header from "../../Components/Header/Header";
 import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
 import Footer from "../../Components/Footer/Footer";
 import { useNavigate } from "react-router-dom";
+import { FaWhatsapp } from "react-icons/fa6";
 
 const PaymentDone = ({ transactionId, amount, username, site }) => {
   const navigate = useNavigate();
@@ -79,7 +80,8 @@ const PaymentDone = ({ transactionId, amount, username, site }) => {
             }}
             className="w-3/4 md:w-1/4 bg-[--main] font-[500] mt-3 text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none"
           >
-            Return to App
+            <FaWhatsapp className="inline-block mr-2 text-white text-[20px] mt-[-2px]" />
+            Go to Whatsapp
           </button>
         </div>
       </div>
