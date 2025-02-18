@@ -1,26 +1,16 @@
 import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Header from "../../Components/Header/Header";
 import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
 import Footer from "../../Components/Footer/Footer";
 import { useNavigate } from "react-router-dom";
-import { FaWhatsapp } from "react-icons/fa6";
 
 const PaymentDone = ({ transactionId, amount, username, site }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const containerHeight = window.innerHeight - 66 - 48;
   const phone = localStorage.getItem("phone");
-
-  // useEffect(() => {
-  //   if (transactionId) {
-  //     const timer = setTimeout(() => {
-  //       const message = encodeURIComponent(`Transaction ${transactionId} uploaded`);
-  //       const whatsappUrl = `https://api.whatsapp.com/send?phone=+923096175228&text=${message}`;
-  //       window.open(whatsappUrl, "_blank");
-  //     }, 5000);
-
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [transactionId]);
+  const utr = location.state?.utr || ''; 
 
   useEffect(() => {
     if (!amount || amount === "") {
@@ -29,7 +19,7 @@ const PaymentDone = ({ transactionId, amount, username, site }) => {
       }, 5000);
     } else {
       const timer = setTimeout(() => {
-        const message = encodeURIComponent(`Username: ${username}\nTransaction ID: ${transactionId}\nWebsite: ${site}\nAmount: ${amount}`);
+        const message = encodeURIComponent(`Username: ${username}\nTransaction ID: ${transactionId}\nWebsite: ${site}\nAmount: ${amount}\nUTR: ${utr}`);
         const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
         window.open(whatsappUrl, "_blank");
       }, 5000);
@@ -74,14 +64,13 @@ const PaymentDone = ({ transactionId, amount, username, site }) => {
 
           <button
             onClick={() => {
-              const message = encodeURIComponent(`Username: ${username}\nTransaction ID: ${transactionId}\nWebsite: ${site}\nAmount: ${amount}`);
+              const message = encodeURIComponent(`Username: ${username}\nTransaction ID: ${transactionId}\nWebsite: ${site}\nAmount: ${amount}\nUTR: ${utr}`);
               const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
               window.open(whatsappUrl, "_blank");
             }}
             className="w-3/4 md:w-1/4 bg-[--main] font-[500] mt-3 text-[15px] h-[40px] text-white rounded-md hover:bg-[--main] focus:outline-none"
           >
-            <FaWhatsapp className="inline-block mr-2 text-white text-[20px] mt-[-2px]" />
-            Go to Whatsapp
+            Return to App
           </button>
         </div>
       </div>
