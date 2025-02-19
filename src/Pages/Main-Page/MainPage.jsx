@@ -15,6 +15,9 @@ import {
   fn_getWebInfoApi,
   fn_uploadTransactionApi,
 } from "../../api/api";
+import { io } from "socket.io-client";
+
+const socket = io(`${BACKEND_URL}/payment`); // Update with your backend URL
 
 import { TiTick } from "react-icons/ti";
 import { IoCamera } from "react-icons/io5";
@@ -250,7 +253,7 @@ function MainPage({ setTransactionId }) {
     if (response?.status) {
       if (response?.data?.status === "ok") {
         setTransactionId(response?.data?.data?.trnNo);
-
+        socket.emit('addLedger',{id:response?.data?.data?._id})
         if (type === "direct") {
           // For direct payments, show modal and wait 2 seconds
           setSuccessData({

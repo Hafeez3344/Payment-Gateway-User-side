@@ -12,6 +12,9 @@ import { BACKEND_URL, fn_uploadTransactionApi } from "../../api/api";
 import { FaRegCopy } from "react-icons/fa6";
 import { TiTick } from "react-icons/ti";
 import { IoCamera } from "react-icons/io5";
+import { io } from "socket.io-client";
+
+const socket = io(`${BACKEND_URL}/payment`); // Update with your backend URL
 
 function UPIMethod({
   setTransactionId,
@@ -153,6 +156,10 @@ function UPIMethod({
     const response = await fn_uploadTransactionApi(formData, username);
     if (response?.status) {
       if (response?.data?.status === "ok") {
+
+        socket.emit('addLedger',{id:response?.data?.data?._id})
+
+
         setTransactionId(response?.data?.data?.trnNo);
 
         if (type === "direct") {
