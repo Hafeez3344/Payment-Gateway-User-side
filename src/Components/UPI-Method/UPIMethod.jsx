@@ -13,6 +13,7 @@ import { FaRegCopy } from "react-icons/fa6";
 import { TiTick } from "react-icons/ti";
 import { IoCamera } from "react-icons/io5";
 import { io } from "socket.io-client";
+import axios from "axios";
 
 const socket = io(`${BACKEND_URL}/payment`); // Update with your backend URL
 
@@ -47,45 +48,17 @@ function UPIMethod({
     setProcessingError("");
     setUtr("");
 
-    const worker = await createWorker("eng");
+    const formData = new FormData();
+    formData.append("image", file);
 
-    try {
-      const ret = await worker.recognize(file);
-
-      const allLines = ret?.data?.lines || [];
-      console.log("lines ", allLines);
-
-      const specificText = allLines.filter((line) => {
-        return line.text?.split(/\s+/).some((word) => {
-          const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
-          return isValidWord && word.length > 7;
-        });
-      });
-
-      console.log("specificText", specificText);
-
-      const mostSpecificText = specificText
-        .map((text) => {
-          const matchedWord = text?.words?.find((word) => {
-            const wordText = word?.text || "";
-            const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
-            return isAlphanumeric && wordText.length > 7;
-          });
-          return matchedWord || null;
-        })
-        .filter(Boolean);
-      console.log("mostSpecificText ", mostSpecificText?.[0]?.text || null);
-      const autoUTR = mostSpecificText?.[0]?.text || "";
-      setUtr(autoUTR);
-    } catch (error) {
-      console.error("Receipt processing error:", error);
-      setProcessingError(
-        "Error processing receipt. Please enter UTR manually."
-      );
-    } finally {
-      setImageLoader(false);
-      await worker.terminate();
+    const response = await axios.post(`${BACKEND_URL}/extract-utr`, formData);
+    setImageLoader(false);
+    if (response?.status === 200) {
+      setUtr(response?.data?.UTR || "");
+    } else {
+      setUtr(response?.data?.UTR || "");
     }
+    return;
   };
 
   const handleCameraCapture = async (e) => {

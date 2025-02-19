@@ -31,6 +31,7 @@ import RefreshPage from "../Refresh-Page/RefreshPage";
 import cloudupload from "../../assets/cloudupload.svg";
 import cancel from "../../assets/cancel.gif";
 import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
+import axios from "axios";
 
 function MainPage({ setTransactionId }) {
   const navigate = useNavigate();
@@ -154,64 +155,17 @@ function MainPage({ setTransactionId }) {
     setProcessingError("");
     setUtr("");
 
-    const worker = await createWorker("eng", {
-      workerPath: "https://unpkg.com/tesseract.js@v4.1.1/dist/worker.min.js",
-      langPath:
-        "https://raw.githubusercontent.com/tesseract-ocr/tessdata/4.0.0",
-      corePath:
-        "https://unpkg.com/tesseract.js-core@v4.0.3/tesseract-core.wasm.js",
-    });
+    const formData = new FormData();
+    formData.append("image", file);
 
-    try {
-      // Initialize worker
-      await worker.loadLanguage("eng");
-      await worker.initialize("eng");
-
-      // Convert file to base64 if needed
-      const imageData = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(file);
-      });
-
-      const ret = await worker.recognize(imageData);
-
-      const allLines = ret?.data?.lines || [];
-      console.log("lines ", allLines);
-
-      const specificText = allLines.filter((line) => {
-        return line.text?.split(/\s+/).some((word) => {
-          const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
-          return isValidWord && word.length > 7;
-        });
-      });
-
-      console.log("specificText", specificText);
-
-      const mostSpecificText = specificText
-        .map((text) => {
-          const matchedWord = text?.words?.find((word) => {
-            const wordText = word?.text || "";
-            const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
-            return isAlphanumeric && wordText.length > 7;
-          });
-          return matchedWord || null;
-        })
-        .filter(Boolean);
-
-      console.log("mostSpecificText ", mostSpecificText?.[0]?.text || null);
-      const autoUTR = mostSpecificText?.[0]?.text || "";
-      setUtr(autoUTR);
-
-      await worker.terminate();
-    } catch (error) {
-      console.error("Receipt processing error:", error);
-      setProcessingError(
-        "Error processing receipt. Please enter UTR manually."
-      );
-    } finally {
-      setImageLoader(false);
+    const response = await axios.post(`${BACKEND_URL}/extract-utr`, formData);
+    setImageLoader(false);
+    if (response?.status === 200) {
+      setUtr(response?.data?.UTR || "");
+    } else {
+      setUtr(response?.data?.UTR || "");
     }
+    return;
   };
 
   const fn_Banksubmit = async () => {
@@ -253,7 +207,7 @@ function MainPage({ setTransactionId }) {
     if (response?.status) {
       if (response?.data?.status === "ok") {
         setTransactionId(response?.data?.data?.trnNo);
-        socket.emit('addLedger',{id:response?.data?.data?._id})
+        socket.emit('addLedger', { id: response?.data?.data?._id })
         if (type === "direct") {
           // For direct payments, show modal and wait 2 seconds
           setSuccessData({
