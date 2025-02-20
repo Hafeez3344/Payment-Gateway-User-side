@@ -213,7 +213,7 @@ function MainPage({ setTransactionId }) {
           setSuccessData({
             transactionId: response?.data?.data?.trnNo,
             message: encodeURIComponent(
-              `Username: ${originalUsername}\nTransaction ID: ${response?.data?.data?.trnNo}\nWebsite: ${site}\nAmount: ${originalAmount}\nUTR: ${utr}`
+              `*New Payment Request Received*\n\n*Username:* ${originalUsername}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${originalAmount}\n*UTR:* ${utr}`
             ),
             phone: localStorage.getItem("phone")
           });
@@ -221,7 +221,7 @@ function MainPage({ setTransactionId }) {
           setTimeout(() => {
             setShowSuccessModal(false);
             const whatsappUrl = `https://api.whatsapp.com/send?phone=${localStorage.getItem("phone")}&text=${encodeURIComponent(
-              `Username: ${originalUsername}\nTransaction ID: ${response?.data?.data?.trnNo}\nWebsite: ${site}\nAmount: ${originalAmount}\nUTR: ${utr}`
+              `*New Payment Request Received*\n\n*Username:* ${originalUsername}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${originalAmount}\n*UTR:* ${utr}`
             )}`;
             window.location.href = whatsappUrl;
           }, 2000);

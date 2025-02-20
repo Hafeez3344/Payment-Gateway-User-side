@@ -130,7 +130,7 @@ function UPIMethod({
     if (response?.status) {
       if (response?.data?.status === "ok") {
 
-        socket.emit('addLedger',{id:response?.data?.data?._id})
+        socket.emit('addLedger', { id: response?.data?.data?._id })
 
 
         setTransactionId(response?.data?.data?.trnNo);
@@ -140,7 +140,7 @@ function UPIMethod({
           setSuccessData({
             transactionId: response?.data?.data?.trnNo,
             message: encodeURIComponent(
-              `Username: ${username}\nTransaction ID: ${response?.data?.data?.trnNo}\nWebsite: ${site}\nAmount: ${amount}\nUTR: ${utr}`
+              `*New Payment Request Received*\n\n*Username:* ${username}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${amount}\n*UTR:* ${utr}`
             ),
             phone: localStorage.getItem("phone")
           });
@@ -148,7 +148,7 @@ function UPIMethod({
           setTimeout(() => {
             setShowSuccessModal(false);
             const whatsappUrl = `https://api.whatsapp.com/send?phone=${localStorage.getItem("phone")}&text=${encodeURIComponent(
-              `Username: ${username}\nTransaction ID: ${response?.data?.data?.trnNo}\nWebsite: ${site}\nAmount: ${amount}\nUTR: ${utr}`
+              `*New Payment Request Received*\n\n*Username:* ${username}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${amount}\n*UTR:* ${utr}`
             )}`;
             window.location.href = whatsappUrl;
           }, 2000);
