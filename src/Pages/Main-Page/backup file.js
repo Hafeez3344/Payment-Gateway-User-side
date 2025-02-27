@@ -15,6 +15,9 @@
 //   fn_getWebInfoApi,
 //   fn_uploadTransactionApi,
 // } from "../../api/api";
+// import { io } from "socket.io-client";
+
+// const socket = io(`${BACKEND_URL}/payment`); // Update with your backend URL
 
 // import { TiTick } from "react-icons/ti";
 // import { IoCamera } from "react-icons/io5";
@@ -27,6 +30,8 @@
 // import RefreshPage from "../Refresh-Page/RefreshPage";
 // import cloudupload from "../../assets/cloudupload.svg";
 // import cancel from "../../assets/cancel.gif";
+// import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
+// import axios from "axios";
 
 // function MainPage({ setTransactionId }) {
 //   const navigate = useNavigate();
@@ -54,6 +59,8 @@
 //   const [processingError, setProcessingError] = useState("");
 
 //   const [isDuplicateModal, setIsDuplicateModal] = useState(false);
+//   const [showSuccessModal, setShowSuccessModal] = useState(false);
+//   const [successData, setSuccessData] = useState({});
 
 //   const decrypt = (encryptedValue) => {
 //     try {
@@ -148,64 +155,17 @@
 //     setProcessingError("");
 //     setUtr("");
 
-//     const worker = await createWorker("eng", {
-//       workerPath: "https://unpkg.com/tesseract.js@v4.1.1/dist/worker.min.js",
-//       langPath:
-//         "https://raw.githubusercontent.com/tesseract-ocr/tessdata/4.0.0",
-//       corePath:
-//         "https://unpkg.com/tesseract.js-core@v4.0.3/tesseract-core.wasm.js",
-//     });
+//     const formData = new FormData();
+//     formData.append("image", file);
 
-//     try {
-//       // Initialize worker
-//       await worker.loadLanguage("eng");
-//       await worker.initialize("eng");
-
-//       // Convert file to base64 if needed
-//       const imageData = await new Promise((resolve) => {
-//         const reader = new FileReader();
-//         reader.onloadend = () => resolve(reader.result);
-//         reader.readAsDataURL(file);
-//       });
-
-//       const ret = await worker.recognize(imageData);
-
-//       const allLines = ret?.data?.lines || [];
-//       console.log("lines ", allLines);
-
-//       const specificText = allLines.filter((line) => {
-//         return line.text?.split(/\s+/).some((word) => {
-//           const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
-//           return isValidWord && word.length > 7;
-//         });
-//       });
-
-//       console.log("specificText", specificText);
-
-//       const mostSpecificText = specificText
-//         .map((text) => {
-//           const matchedWord = text?.words?.find((word) => {
-//             const wordText = word?.text || "";
-//             const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
-//             return isAlphanumeric && wordText.length > 7;
-//           });
-//           return matchedWord || null;
-//         })
-//         .filter(Boolean);
-
-//       console.log("mostSpecificText ", mostSpecificText?.[0]?.text || null);
-//       const autoUTR = mostSpecificText?.[0]?.text || "";
-//       setUtr(autoUTR);
-
-//       await worker.terminate();
-//     } catch (error) {
-//       console.error("Receipt processing error:", error);
-//       setProcessingError(
-//         "Error processing receipt. Please enter UTR manually."
-//       );
-//     } finally {
-//       setImageLoader(false);
+//     const response = await axios.post(`${BACKEND_URL}/extract-utr`, formData);
+//     setImageLoader(false);
+//     if (response?.status === 200) {
+//       setUtr(response?.data?.UTR || "");
+//     } else {
+//       setUtr(response?.data?.UTR || "");
 //     }
+//     return;
 //   };
 
 //   const fn_Banksubmit = async () => {
@@ -246,10 +206,40 @@
 //     const response = await fn_uploadTransactionApi(formData, originalUsername);
 //     if (response?.status) {
 //       if (response?.data?.status === "ok") {
+//         setTransactionId(response?.data?.data?.trnNo);
+//         socket.emit('addLedger', { id: response?.data?.data?._id })
+//         if (type === "direct") {
+//           // For direct payments, show modal and wait 2 seconds
+//           setSuccessData({
+//             transactionId: response?.data?.data?.trnNo,
+//             message: encodeURIComponent(
+//               `*New Payment Request Received*\n\n*Username:* ${originalUsername}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${originalAmount}\n*UTR:* ${utr}`
+//             ),
+//             phone: localStorage.getItem("phone")
+//           });
+//           setShowSuccessModal(true);
+//           setTimeout(() => {
+//             setShowSuccessModal(false);
+//             const whatsappUrl = `https://api.whatsapp.com/send?phone=${localStorage.getItem("phone")}&text=${encodeURIComponent(
+//               `*New Payment Request Received*\n\n*Username:* ${originalUsername}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${originalAmount}\n*UTR:* ${utr}`
+//             )}`;
+//             window.location.href = whatsappUrl;
+//           }, 2000);
+//         } else {
+//           // For non-direct payments, redirect immediately without modal
+//           navigate("/payment-done", {
+//             state: {
+//               transactionId: response?.data?.data?.trnNo,
+//               amount: originalAmount,
+//               username: originalUsername,
+//               site,
+//               utr
+//             }
+//           });
+//         }
+
 //         setUtr("");
 //         setSelectedImage({});
-//         setTransactionId(response?.data?.data?.trnNo);
-//         navigate("/payment-done");
 //       } else if (response?.message?.toLowerCase().includes("unique utr")) {
 //         setIsDuplicateModal(true);
 //       } else {
@@ -309,33 +299,31 @@
 //         <main className="flex flex-col-reverse lg:flex-row gap-[60px] md:gap-2">
 //           <div className="w-full lg:w-[70%] max-w-[1000px] bg-white sm:px-6 lg:pe-[40px]">
 //             {/* Payment method tabs */}
-//             <div className="flex flex-col sm:flex-row mb-8 sm:mb-12">
+//             <div className="flex flex-row mb-8 sm:mb-12">
 //               <div
 //                 onClick={() => setSelectedMethod("UPI")}
-//                 className={`w-full sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${
-//                   selectedMethod === "UPI"
-//                     ? "outline outline-[2px] outline-[--main]"
-//                     : "outline outline-[1px] outline-r-0 outline-[--secondary]"
-//                 } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
+//                 className={`w-1/2 sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${selectedMethod === "UPI"
+//                   ? "outline outline-[2px] outline-[--main]"
+//                   : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+//                   } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
 //               >
 //                 <img
 //                   src={upilogo}
 //                   alt="UPI Logo"
-//                   className="w-24 h-24 sm:w-32 sm:h-32 lg:w-52 lg:h-52 object-contain"
+//                   className="w-16 h-16 sm:w-32 sm:h-32 lg:w-52 lg:h-52 object-contain"
 //                 />
 //               </div>
 //               <div
 //                 onClick={() => setSelectedMethod("Bank")}
-//                 className={`w-full sm:w-1/2 p-3 sm:p-4 ${
-//                   selectedMethod === "Bank"
-//                     ? "outline outline-[2px] outline-[--main]"
-//                     : "outline outline-[1px] outline-r-0 outline-[--secondary]"
-//                 } flex items-center justify-center cursor-pointer h-28 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
+//                 className={`w-1/2 sm:w-1/2 p-3 sm:p-4 ${selectedMethod === "Bank"
+//                   ? "outline outline-[2px] outline-[--main]"
+//                   : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+//                   } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
 //               >
 //                 <img
 //                   src={banklogo}
 //                   alt="Bank Transfer Logo"
-//                   className="w-24 h-24 sm:w-32 sm:h-32 lg:w-60 lg:h-60 object-contain"
+//                   className="w-16 h-16 sm:w-32 sm:h-32 lg:w-60 lg:h-60 object-contain"
 //                 />
 //               </div>
 //             </div>
@@ -348,11 +336,10 @@
 //                     <div>
 //                       <div
 //                         onClick={() => setSelectedUPIMethod("viaQR")}
-//                         className={`p-2 border-l-[6px] border-b-2 border-gray-300 flex items-center gap-2 cursor-pointer ${
-//                           selectedUPIMethod === "viaQR"
-//                             ? "bg-white border-[--main] text-black"
-//                             : "bg-[--grayBg] border-[gray-900] text-gray-700"
-//                         }`}
+//                         className={`p-2 border-l-[6px] border-b-2 border-gray-300 flex items-center gap-2 cursor-pointer ${selectedUPIMethod === "viaQR"
+//                           ? "bg-white border-[--main] text-black"
+//                           : "bg-[--grayBg] border-[gray-900] text-gray-700"
+//                           }`}
 //                       >
 //                         <img src={viaQr} alt="Via QR" className="w-8 h-8" />
 //                         <p className="font-bold text-[19px]">UPI</p>
@@ -489,9 +476,8 @@
 //                       </div>
 
 //                       <div
-//                         className={`flex items-center space-x-3 sm:space-x-1 ${
-//                           bank?.image ? "mb-2" : "mt-1 mb-2"
-//                         }`}
+//                         className={`flex items-center space-x-3 sm:space-x-1 ${bank?.image ? "mb-2" : "mt-1 mb-2"
+//                           }`}
 //                       >
 //                         <img
 //                           src={attention}
@@ -548,13 +534,14 @@
 //                             />
 //                           )}
 //                         </div>
-//                         <label className="flex sm:hidden">
+//                         <label className="flex sm:hidden" onClick={() => alert("Coming Soon")}>
 //                           <input
 //                             type="file"
 //                             accept="image/*"
 //                             capture="environment"
 //                             className="hidden"
 //                             onChange={(e) => fn_selectImage(e)}
+//                             disabled
 //                           />
 //                           <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer w-full items-center justify-center text-gray-700 sm:w-auto flex">
 //                             <IoCamera className="scale-[1.3] me-[10px]" />
@@ -645,6 +632,34 @@
 //           </p>
 //           <p className="mt-2 text-gray-500 text-center">
 //             Please enter a unique UTR number for your transaction.
+//           </p>
+//         </div>
+//       </Modal>
+
+//       <Modal
+//         title="Payment Successful"
+//         open={showSuccessModal}
+//         footer={null}
+//         closable={false}
+//         maskClosable={false}
+//         centered
+//       >
+//         <div className="py-4 flex flex-col items-center">
+//           <div className="flex justify-center mb-4">
+//             <img
+//               src={AnimationTickmarck}
+//               alt="Success"
+//               className="w-24 h-24 object-contain"
+//             />
+//           </div>
+//           <h2 className="text-xl font-bold text-green-600 mb-2">
+//             Payment Submitted Successfully!
+//           </h2>
+//           <p className="text-gray-600 mb-2">
+//             Transaction ID: {successData.transactionId}
+//           </p>
+//           <p className="text-gray-500 text-center">
+//             {type === "direct" ? "Redirecting to WhatsApp..." : "Redirecting..."}
 //           </p>
 //         </div>
 //       </Modal>

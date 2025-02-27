@@ -129,9 +129,7 @@ function UPIMethod({
     const response = await fn_uploadTransactionApi(formData, username);
     if (response?.status) {
       if (response?.data?.status === "ok") {
-
-        socket.emit('addLedger', { id: response?.data?.data?._id })
-
+        socket.emit("addLedger", { id: response?.data?.data?._id });
 
         setTransactionId(response?.data?.data?.trnNo);
 
@@ -142,12 +140,14 @@ function UPIMethod({
             message: encodeURIComponent(
               `*New Payment Request Received*\n\n*Username:* ${username}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${amount}\n*UTR:* ${utr}`
             ),
-            phone: localStorage.getItem("phone")
+            phone: localStorage.getItem("phone"),
           });
           setShowSuccessModal(true);
           setTimeout(() => {
             setShowSuccessModal(false);
-            const whatsappUrl = `https://api.whatsapp.com/send?phone=${localStorage.getItem("phone")}&text=${encodeURIComponent(
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=${localStorage.getItem(
+              "phone"
+            )}&text=${encodeURIComponent(
               `*New Payment Request Received*\n\n*Username:* ${username}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${amount}\n*UTR:* ${utr}`
             )}`;
             window.location.href = whatsappUrl;
@@ -160,8 +160,8 @@ function UPIMethod({
               amount,
               username,
               site,
-              utr
-            }
+              utr,
+            },
           });
         }
 
@@ -314,8 +314,9 @@ function UPIMethod({
                 </div>
               )}
               <div
-                className={`flex items-center ${bank?.image ? "my-[18px]" : "-mt-[17px] mb-[16px]"
-                  }`}
+                className={`flex items-center ${
+                  bank?.image ? "my-[18px]" : "-mt-[17px] mb-[16px]"
+                }`}
               >
                 <img
                   src={attention}
@@ -383,11 +384,20 @@ function UPIMethod({
                   ariaLabel="color-ring-loading"
                   wrapperStyle={{}}
                   wrapperClass="color-ring-wrapper"
-                  colors={["#000000", "#000000", "#000000", "#000000", "#000000"]}
+                  colors={[
+                    "#000000",
+                    "#000000",
+                    "#000000",
+                    "#000000",
+                    "#000000",
+                  ]}
                 />
               )}
             </div>
-            <label className="flex sm:hidden" onClick={() => alert("Coming Soon")}>
+            <label
+              className="flex sm:hidden"
+              onClick={() => alert("Coming Soon")}
+            >
               <input
                 type="file"
                 accept="image/*"
@@ -487,7 +497,9 @@ function UPIMethod({
             Transaction ID: {successData.transactionId}
           </p>
           <p className="text-gray-500 text-center">
-            {type === "direct" ? "Redirecting to WhatsApp..." : "Redirecting..."}
+            {type === "direct"
+              ? "Redirecting to WhatsApp..."
+              : "Redirecting..."}
           </p>
         </div>
       </Modal>
