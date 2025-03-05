@@ -38,6 +38,7 @@ function UPIMethod({
   const [isDuplicateModal, setIsDuplicateModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fn_selectImage = async (e) => {
     const file = e?.target?.files?.[0];
@@ -111,71 +112,78 @@ function UPIMethod({
     if (utr === "") return alert("Enter UTR Number");
     if (!checkBox) return alert("Verify the Uploaded Receipt Checkbox");
 
-    const formData = new FormData();
-    formData.append("image", selectedImage);
-    formData.append("utr", utr);
-    formData.append("amount", amount);
-    formData.append("tax", tax);
-    formData.append("total", total);
-    formData.append("website", window.location.origin);
-    formData.append("bankId", bank?._id);
-    if (type && site) {
-      formData.append("type", type);
-      formData.append("site", site);
-    } else {
-      formData.append("type", "manual");
-    }
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", selectedImage);
+      formData.append("utr", utr);
+      formData.append("amount", amount);
+      formData.append("tax", tax);
+      formData.append("total", total);
+      formData.append("website", window.location.origin);
+      formData.append("bankId", bank?._id);
+      if (type && site) {
+        formData.append("type", type);
+        formData.append("site", site);
+      } else {
+        formData.append("type", "manual");
+      }
 
-    const response = await fn_uploadTransactionApi(formData, username);
-    if (response?.status) {
-      if (response?.data?.status === "ok") {
-        socket.emit("addLedger", { id: response?.data?.data?._id });
+      const response = await fn_uploadTransactionApi(formData, username);
+      if (response?.status) {
+        if (response?.data?.status === "ok") {
+          socket.emit("addLedger", { id: response?.data?.data?._id });
 
-        setTransactionId(response?.data?.data?.trnNo);
+          setTransactionId(response?.data?.data?.trnNo);
 
-        if (type === "direct") {
-          // For direct payments, show modal and wait 2 seconds
-          setSuccessData({
-            transactionId: response?.data?.data?.trnNo,
-            message: encodeURIComponent(
-              `*New Payment Request Received*\n\n*Username:* ${username}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${amount}\n*UTR:* ${utr}`
-            ),
-            phone: localStorage.getItem("phone"),
-          });
-          setShowSuccessModal(true);
-          setTimeout(() => {
-            setShowSuccessModal(false);
-            const whatsappUrl = `https://api.whatsapp.com/send?phone=${localStorage.getItem(
-              "phone"
-            )}&text=${encodeURIComponent(
-              `*New Payment Request Received*\n\n*Username:* ${username}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${amount}\n*UTR:* ${utr}`
-            )}`;
-            window.location.href = whatsappUrl;
-          }, 2000);
-        } else {
-          // For non-direct payments, redirect immediately without modal
-          navigate("/payment-done", {
-            state: {
+          if (type === "direct") {
+            // For direct payments, show modal and wait 2 seconds
+            setSuccessData({
               transactionId: response?.data?.data?.trnNo,
-              amount,
-              username,
-              site,
-              utr,
-            },
-          });
-        }
+              message: encodeURIComponent(
+                `*New Payment Request Received*\n\n*Username:* ${username}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${amount}\n*UTR:* ${utr}`
+              ),
+              phone: localStorage.getItem("phone"),
+            });
+            setShowSuccessModal(true);
+            setTimeout(() => {
+              setShowSuccessModal(false);
+              const whatsappUrl = `https://api.whatsapp.com/send?phone=${localStorage.getItem(
+                "phone"
+              )}&text=${encodeURIComponent(
+                `*New Payment Request Received*\n\n*Username:* ${username}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${amount}\n*UTR:* ${utr}`
+              )}`;
+              window.location.href = whatsappUrl;
+            }, 2000);
+          } else {
+            // For non-direct payments, redirect immediately without modal
+            navigate("/payment-done", {
+              state: {
+                transactionId: response?.data?.data?.trnNo,
+                amount,
+                username,
+                site,
+                utr,
+              },
+            });
+          }
 
-        setUtr("");
-        setSelectedImage({});
+          setUtr("");
+          setSelectedImage({});
+        } else if (response?.message?.toLowerCase().includes("unique utr")) {
+          setIsDuplicateModal(true);
+        } else {
+          alert(response?.message || "Something Went Wrong");
+        }
       } else if (response?.message?.toLowerCase().includes("unique utr")) {
         setIsDuplicateModal(true);
       } else {
         alert(response?.message || "Something Went Wrong");
       }
-    } else if (response?.message?.toLowerCase().includes("unique utr")) {
-      setIsDuplicateModal(true);
-    } else {
-      alert(response?.message || "Something Went Wrong");
+    } catch (error) {
+      alert("Something went wrong");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -314,9 +322,8 @@ function UPIMethod({
                 </div>
               )}
               <div
-                className={`flex items-center ${
-                  bank?.image ? "my-[18px]" : "-mt-[17px] mb-[16px]"
-                }`}
+                className={`flex items-center ${bank?.image ? "my-[18px]" : "-mt-[17px] mb-[16px]"
+                  }`}
               >
                 <img
                   src={attention}
@@ -435,9 +442,12 @@ function UPIMethod({
             </div>
             <button
               onClick={fn_QRsubmit}
-              className="w-full bg-[--main] font-[500] text-[15px] h-[45px] text-white rounded-md"
+              disabled={isSubmitting}
+              className={`w-full ${
+                isSubmitting ? "bg-gray-400" : "bg-[--main]"
+              } font-[500] text-[15px] h-[45px] text-white rounded-md`}
             >
-              Submit Now
+              {isSubmitting ? "Processing..." : "Submit Now"}
             </button>
           </div>
         )}

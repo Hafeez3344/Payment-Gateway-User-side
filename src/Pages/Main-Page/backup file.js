@@ -17,7 +17,7 @@
 // } from "../../api/api";
 // import { io } from "socket.io-client";
 
-// const socket = io(`${BACKEND_URL}/payment`); // Update with your backend URL
+// const socket = io(`${BACKEND_URL}/payment`); 
 
 // import { TiTick } from "react-icons/ti";
 // import { IoCamera } from "react-icons/io5";
@@ -53,6 +53,7 @@
 //   const [originalUsername, setOriginalUsername] = useState("");
 
 //   const [utr, setUtr] = useState("");
+//   const [isChangeUTR, setIsChangeUTR] = useState("");
 //   const [checkBox, setCheckBox] = useState(false);
 //   const [imageLoader, setImageLoader] = useState(false);
 //   const [selectedImage, setSelectedImage] = useState(null);
@@ -207,7 +208,7 @@
 //     if (response?.status) {
 //       if (response?.data?.status === "ok") {
 //         setTransactionId(response?.data?.data?.trnNo);
-//         socket.emit('addLedger', { id: response?.data?.data?._id })
+//         socket.emit("addLedger", { id: response?.data?.data?._id });
 //         if (type === "direct") {
 //           // For direct payments, show modal and wait 2 seconds
 //           setSuccessData({
@@ -215,12 +216,14 @@
 //             message: encodeURIComponent(
 //               `*New Payment Request Received*\n\n*Username:* ${originalUsername}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${originalAmount}\n*UTR:* ${utr}`
 //             ),
-//             phone: localStorage.getItem("phone")
+//             phone: localStorage.getItem("phone"),
 //           });
 //           setShowSuccessModal(true);
 //           setTimeout(() => {
 //             setShowSuccessModal(false);
-//             const whatsappUrl = `https://api.whatsapp.com/send?phone=${localStorage.getItem("phone")}&text=${encodeURIComponent(
+//             const whatsappUrl = `https://api.whatsapp.com/send?phone=${localStorage.getItem(
+//               "phone"
+//             )}&text=${encodeURIComponent(
 //               `*New Payment Request Received*\n\n*Username:* ${originalUsername}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${originalAmount}\n*UTR:* ${utr}`
 //             )}`;
 //             window.location.href = whatsappUrl;
@@ -233,8 +236,8 @@
 //               amount: originalAmount,
 //               username: originalUsername,
 //               site,
-//               utr
-//             }
+//               utr,
+//             },
 //           });
 //         }
 
@@ -303,8 +306,8 @@
 //               <div
 //                 onClick={() => setSelectedMethod("UPI")}
 //                 className={`w-1/2 sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${selectedMethod === "UPI"
-//                   ? "outline outline-[2px] outline-[--main]"
-//                   : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+//                     ? "outline outline-[2px] outline-[--main]"
+//                     : "outline outline-[1px] outline-r-0 outline-[--secondary]"
 //                   } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
 //               >
 //                 <img
@@ -316,8 +319,8 @@
 //               <div
 //                 onClick={() => setSelectedMethod("Bank")}
 //                 className={`w-1/2 sm:w-1/2 p-3 sm:p-4 ${selectedMethod === "Bank"
-//                   ? "outline outline-[2px] outline-[--main]"
-//                   : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+//                     ? "outline outline-[2px] outline-[--main]"
+//                     : "outline outline-[1px] outline-r-0 outline-[--secondary]"
 //                   } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
 //               >
 //                 <img
@@ -337,8 +340,8 @@
 //                       <div
 //                         onClick={() => setSelectedUPIMethod("viaQR")}
 //                         className={`p-2 border-l-[6px] border-b-2 border-gray-300 flex items-center gap-2 cursor-pointer ${selectedUPIMethod === "viaQR"
-//                           ? "bg-white border-[--main] text-black"
-//                           : "bg-[--grayBg] border-[gray-900] text-gray-700"
+//                             ? "bg-white border-[--main] text-black"
+//                             : "bg-[--grayBg] border-[gray-900] text-gray-700"
 //                           }`}
 //                       >
 //                         <img src={viaQr} alt="Via QR" className="w-8 h-8" />
@@ -534,7 +537,10 @@
 //                             />
 //                           )}
 //                         </div>
-//                         <label className="flex sm:hidden" onClick={() => alert("Coming Soon")}>
+//                         <label
+//                           className="flex sm:hidden"
+//                           onClick={() => alert("Coming Soon")}
+//                         >
 //                           <input
 //                             type="file"
 //                             accept="image/*"
@@ -659,7 +665,9 @@
 //             Transaction ID: {successData.transactionId}
 //           </p>
 //           <p className="text-gray-500 text-center">
-//             {type === "direct" ? "Redirecting to WhatsApp..." : "Redirecting..."}
+//             {type === "direct"
+//               ? "Redirecting to WhatsApp..."
+//               : "Redirecting..."}
 //           </p>
 //         </div>
 //       </Modal>
