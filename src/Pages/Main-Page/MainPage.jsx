@@ -1,5 +1,4 @@
 import CryptoJS from "crypto-js";
-import { createWorker } from "tesseract.js";
 import { ColorRing } from "react-loader-spinner";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -17,7 +16,7 @@ import {
 } from "../../api/api";
 import { io } from "socket.io-client";
 
-const socket = io(`${BACKEND_URL}/payment`); 
+const socket = io(`${BACKEND_URL}/payment`);
 
 import { TiTick } from "react-icons/ti";
 import { IoCamera } from "react-icons/io5";
@@ -37,6 +36,7 @@ function MainPage({ setTransactionId }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [bank, setBank] = useState({});
+  const [banks, setBanks] = useState([]);
   const secretKey = "payment-gateway-project";
   const searchParams = new URLSearchParams(location.search);
   const [oneTimeEncryption, setOneTimeEncryption] = useState(false);
@@ -63,6 +63,7 @@ function MainPage({ setTransactionId }) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedBank, setSelectedBank] = useState(null);
 
   const decrypt = (encryptedValue) => {
     try {
@@ -134,6 +135,8 @@ function MainPage({ setTransactionId }) {
     const response = await fn_getBanksByTabApi(tab);
     if (response?.status) {
       setBank(response?.data?.[0] || {});
+      setBanks(response?.data || []);
+      setSelectedBank(response?.data?.[0] || {});
     } else {
       setBank({});
     }
@@ -199,7 +202,7 @@ function MainPage({ setTransactionId }) {
         ).toFixed(1)
       );
       formData.append("website", window.location.origin);
-      formData.append("bankId", bank?._id);
+      formData.append("bankId", selectedBank?._id);
       if (type && site) {
         formData.append("type", type);
         formData.append("site", site);
@@ -314,8 +317,8 @@ function MainPage({ setTransactionId }) {
               <div
                 onClick={() => setSelectedMethod("UPI")}
                 className={`w-1/2 sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${selectedMethod === "UPI"
-                    ? "outline outline-[2px] outline-[--main]"
-                    : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+                  ? "outline outline-[2px] outline-[--main]"
+                  : "outline outline-[1px] outline-r-0 outline-[--secondary]"
                   } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
               >
                 <img
@@ -327,8 +330,8 @@ function MainPage({ setTransactionId }) {
               <div
                 onClick={() => setSelectedMethod("Bank")}
                 className={`w-1/2 sm:w-1/2 p-3 sm:p-4 ${selectedMethod === "Bank"
-                    ? "outline outline-[2px] outline-[--main]"
-                    : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+                  ? "outline outline-[2px] outline-[--main]"
+                  : "outline outline-[1px] outline-r-0 outline-[--secondary]"
                   } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
               >
                 <img
@@ -345,39 +348,32 @@ function MainPage({ setTransactionId }) {
                 <div className="w-full sm:w-1/3 bg-[--grayBg] border border-[--secondary] flex flex-col gap-2">
                   {selectedMethod === "UPI" ? (
                     <div>
-                      <div
-                        onClick={() => setSelectedUPIMethod("viaQR")}
-                        className={`p-2 border-l-[6px] border-b-2 border-gray-300 flex items-center gap-2 cursor-pointer ${selectedUPIMethod === "viaQR"
-                            ? "bg-white border-[--main] text-black"
-                            : "bg-[--grayBg] border-[gray-900] text-gray-700"
-                          }`}
-                      >
-                        <img src={viaQr} alt="Via QR" className="w-8 h-8" />
-                        <p className="font-bold text-[19px]">UPI</p>
-                        <span className="text-[18px] mt-[1px]">
-                          (via QR Scan)
-                        </span>
-                      </div>
+                      {banks?.map((item) => (
+                        <div
+                          onClick={() => {
+                            setSelectedUPIMethod("viaQR");
+                            setSelectedBank(item);
+                          }}
+                          className={`p-2 border-l-[6px] border-b-2 border-gray-300 flex items-center gap-2 cursor-pointer ${selectedBank?._id === item?._id ? "border-l-[--bred] bg-white" : "border-l-gray-300"
+                            }`}
+                        >
+                          <img src={viaQr} alt="Via QR" className="w-8 h-8" />
+                          <p className="font-bold text-[19px]">UPI</p>
+                          <span className="text-[13px] font-[500] mt-[1px]">
+                            ({item?.iban})
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   ) : (
                     <div>
-                      <div className="flex gap-1 cursor-pointer bg-white border-l-[6px] border-l-[--bred] text-black border-b-2 border-gray-300">
-                        <img
-                          className="w-12 h-12 ml-1"
-                          src={
-                            Banks?.find(
-                              (bankItem) =>
-                                bankItem?.title?.toLowerCase() ===
-                                bank?.bankName?.toLowerCase()
-                            )?.img ||
-                            "https://www.shutterstock.com/image-vector/bank-building-architecture-facade-government-600nw-2440534455.jpg"
-                          }
-                          alt={`${bank?.bankName || "Bank"} logo`}
-                        />
-                        <p className="text-[19px] font-[700] pt-2">
-                          {bank?.bankName}
-                        </p>
-                      </div>
+                      {banks?.map((item) => (
+                        <div className={`flex gap-1 h-12 cursor-pointer border-l-[6px] border-l-[--bred] text-black border-b-2 border-gray-300 ${selectedBank?._id === item?._id ? "border-l-[--bred] bg-white" : "border-l-gray-300"}`} onClick={() => setSelectedBank(item)}>
+                          <p className="text-[19px] font-[700] pt-2 ms-3">
+                            {item?.bankName}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -388,7 +384,7 @@ function MainPage({ setTransactionId }) {
                     <UPIMethod
                       setTransactionId={setTransactionId}
                       selectedUPIMethod={selectedUPIMethod}
-                      bank={bank}
+                      bank={selectedBank}
                       amount={originalAmount}
                       tax={webInfo?.tax || 0}
                       type={type}
@@ -419,12 +415,12 @@ function MainPage({ setTransactionId }) {
                             Bank Name:
                           </span>
                           <span className="text-[14px] font-[500]">
-                            {bank?.bankName}
+                            {selectedBank?.bankName}
                             {!copyBankName ? (
                               <FaRegCopy
                                 className="inline-block mt-[-2px] ms-[15px] cursor-pointer"
                                 onClick={() =>
-                                  fn_copy("copyBankName", bank?.bankName)
+                                  fn_copy("copyBankName", selectedBank?.bankName)
                                 }
                               />
                             ) : (
@@ -436,14 +432,14 @@ function MainPage({ setTransactionId }) {
                             Account Holder Name:
                           </span>
                           <span className="text-[14px] font-[500]">
-                            {bank?.accountHolderName}
+                            {selectedBank?.accountHolderName}
                             {!copyHolderName ? (
                               <FaRegCopy
                                 className="inline-block mt-[-2px] ms-[15px] cursor-pointer"
                                 onClick={() =>
                                   fn_copy(
                                     "copyHolderName",
-                                    bank?.accountHolderName
+                                    selectedBank?.accountHolderName
                                   )
                                 }
                               />
@@ -456,12 +452,12 @@ function MainPage({ setTransactionId }) {
                             Account Number:
                           </span>
                           <span className="text-[14px] font-[500]">
-                            {bank?.accountNo}
+                            {selectedBank?.accountNo}
                             {!copyAccount ? (
                               <FaRegCopy
                                 className="inline-block mt-[-2px] ms-[15px] cursor-pointer"
                                 onClick={() =>
-                                  fn_copy("copyAccount", bank?.accountNo)
+                                  fn_copy("copyAccount", selectedBank?.accountNo)
                                 }
                               />
                             ) : (
@@ -473,11 +469,11 @@ function MainPage({ setTransactionId }) {
                             IFSC:
                           </span>
                           <span className="text-[14px] font-[500] break-words">
-                            {bank?.iban}
+                            {selectedBank?.iban}
                             {!copyIban ? (
                               <FaRegCopy
                                 className="inline-block mt-[-2px] ms-[15px] cursor-pointer"
-                                onClick={() => fn_copy("copyIban", bank?.iban)}
+                                onClick={() => fn_copy("copyIban", selectedBank?.iban)}
                               />
                             ) : (
                               <TiTick className="inline-block mt-[-2px] ms-[15px] scale-[1.2] cursor-pointer" />
@@ -487,7 +483,7 @@ function MainPage({ setTransactionId }) {
                       </div>
 
                       <div
-                        className={`flex items-center space-x-3 sm:space-x-1 ${bank?.image ? "mb-2" : "mt-1 mb-2"
+                        className={`flex items-center space-x-3 sm:space-x-1 ${selectedBank?.image ? "mb-2" : "mt-1 mb-2"
                           }`}
                       >
                         <img
@@ -588,9 +584,8 @@ function MainPage({ setTransactionId }) {
                         <button
                           onClick={fn_Banksubmit}
                           disabled={isSubmitting}
-                          className={`w-full ${
-                            isSubmitting ? "bg-gray-400" : "bg-[--main]"
-                          } font-[500] text-[15px] h-[45px] text-white rounded-md`}
+                          className={`w-full ${isSubmitting ? "bg-gray-400" : "bg-[--main]"
+                            } font-[500] text-[15px] h-[45px] text-white rounded-md`}
                         >
                           {isSubmitting ? "Processing..." : "Submit Now"}
                         </button>
