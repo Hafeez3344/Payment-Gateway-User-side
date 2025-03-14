@@ -6,7 +6,6 @@ import cloudupload from "../../assets/cloudupload.svg";
 import { Modal } from "antd";
 import cancel from "../../assets/cancel.gif";
 import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
-
 import { createWorker } from "tesseract.js";
 import { BACKEND_URL, fn_uploadTransactionApi } from "../../api/api";
 import { FaRegCopy } from "react-icons/fa6";
@@ -15,7 +14,7 @@ import { IoCamera } from "react-icons/io5";
 import { io } from "socket.io-client";
 import axios from "axios";
 
-const socket = io(`${BACKEND_URL}/payment`); // Update with your backend URL
+const socket = io(`${BACKEND_URL}/payment`);
 
 function UPIMethod({
   setTransactionId,
@@ -62,6 +61,7 @@ function UPIMethod({
     return;
   };
 
+
   const handleCameraCapture = async (e) => {
     const file = e?.target?.files?.[0];
     if (!file) return;
@@ -95,17 +95,17 @@ function UPIMethod({
         .filter(Boolean);
 
       const autoUTR = mostSpecificText?.[0]?.text || "";
-      setUtr(autoUTR);
+      setUtr(autoUTR); // This should set the UTR in the state
     } catch (error) {
       console.error("Receipt processing error:", error);
-      setProcessingError(
-        "Error processing receipt. Please enter UTR manually."
-      );
+      setProcessingError("Error processing receipt. Please enter UTR manually.");
     } finally {
       setImageLoader(false);
       await worker.terminate();
     }
   };
+
+
 
   const fn_QRsubmit = async () => {
     if (!selectedImage) return alert("Upload Transaction Slip");
@@ -401,17 +401,45 @@ function UPIMethod({
                 />
               )}
             </div>
-            <label
-              className="flex sm:hidden"
-              onClick={() => alert("Coming Soon")}
-            >
+
+            {/* <label className="flex sm:hidden">
               <input
                 type="file"
                 accept="image/*"
                 capture="environment"
-                className="hidden"
-                onChange={handleCameraCapture}
-                disabled
+                className="hidden text-wrap"
+                onChange={handleCameraCapture} 
+
+              />
+              <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto flex">
+                <IoCamera className="scale-[1.3] me-[10px]" />
+                <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
+                  Capture Image
+                </span>
+              </div>
+            </label> */}
+
+            <label className="flex sm:hidden">
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden text-wrap"
+                onChange={(e) => {
+                  // Get the current domain
+                  const currentDomain = window.location.origin;
+
+                  // Check if it's the allowed domain
+                  if (currentDomain === "https://www.royal247.org") {
+                    // Execute the original handleCameraCapture function
+                    handleCameraCapture(e);
+                  } else {
+                    // Show "Coming Soon" alert
+                    alert("Coming Soon");
+                    // Clear the input value to allow selecting the same file again
+                    e.target.value = null;
+                  }
+                }}
               />
               <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto flex">
                 <IoCamera className="scale-[1.3] me-[10px]" />
@@ -420,6 +448,7 @@ function UPIMethod({
                 </span>
               </div>
             </label>
+
             <input
               type="text"
               value={utr}
@@ -443,9 +472,8 @@ function UPIMethod({
             <button
               onClick={fn_QRsubmit}
               disabled={isSubmitting}
-              className={`w-full ${
-                isSubmitting ? "bg-gray-400" : "bg-[--main]"
-              } font-[500] text-[15px] h-[45px] text-white rounded-md`}
+              className={`w-full ${isSubmitting ? "bg-gray-400" : "bg-[--main]"
+                } font-[500] text-[15px] h-[45px] text-white rounded-md`}
             >
               {isSubmitting ? "Processing..." : "Submit Now"}
             </button>

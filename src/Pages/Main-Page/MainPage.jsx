@@ -3,6 +3,7 @@ import { ColorRing } from "react-loader-spinner";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Modal } from "antd";
+import { createWorker } from "tesseract.js";
 
 import Layout from "../../Layout/Layout";
 import { Banks } from "../../json-data/banks";
@@ -171,6 +172,49 @@ function MainPage({ setTransactionId }) {
       setUtr(response?.data?.UTR || "");
     }
     return;
+  };
+
+  const handleCameraCapture = async (e) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+
+    setSelectedImage(file);
+    setImageLoader(true);
+    setProcessingError("");
+    setUtr("");
+
+    const worker = await createWorker("eng");
+
+    try {
+      const ret = await worker.recognize(file);
+      const allLines = ret?.data?.lines || [];
+      const specificText = allLines.filter((line) => {
+        return line.text?.split(/\s+/).some((word) => {
+          const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
+          return isValidWord && word.length > 7;
+        });
+      });
+
+      const mostSpecificText = specificText
+        .map((text) => {
+          const matchedWord = text?.words?.find((word) => {
+            const wordText = word?.text || "";
+            const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
+            return isAlphanumeric && wordText.length > 7;
+          });
+          return matchedWord || null;
+        })
+        .filter(Boolean);
+
+      const autoUTR = mostSpecificText?.[0]?.text || "";
+      setUtr(autoUTR);
+    } catch (error) {
+      console.error("Receipt processing error:", error);
+      setProcessingError("Error processing receipt. Please enter UTR manually.");
+    } finally {
+      setImageLoader(false);
+      await worker.terminate();
+    }
   };
 
   const fn_Banksubmit = async () => {
@@ -541,19 +585,45 @@ function MainPage({ setTransactionId }) {
                             />
                           )}
                         </div>
-                        <label
-                          className="flex sm:hidden"
-                          onClick={() => alert("Coming Soon")}
-                        >
+                        {/* <label className="flex sm:hidden">
                           <input
                             type="file"
                             accept="image/*"
                             capture="environment"
                             className="hidden"
-                            onChange={(e) => fn_selectImage(e)}
-                            disabled
+                            onChange={handleCameraCapture}
                           />
                           <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer w-full items-center justify-center text-gray-700 sm:w-auto flex">
+                            <IoCamera className="scale-[1.3] me-[10px]" />
+                            <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
+                              Capture Image
+                            </span>
+                          </div>
+                        </label> */}
+
+                        <label className="flex sm:hidden">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            className="hidden text-wrap"
+                            onChange={(e) => {
+                              // Get the current domain
+                              const currentDomain = window.location.origin;
+
+                              // Check if it's the allowed domain
+                              if (currentDomain === "https://www.royal247.org") {
+                                // Execute the original handleCameraCapture function
+                                handleCameraCapture(e);
+                              } else {
+                                // Show "Coming Soon" alert
+                                alert("Coming Soon");
+                                // Clear the input value to allow selecting the same file again
+                                e.target.value = null;
+                              }
+                            }}
+                          />
+                          <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto flex">
                             <IoCamera className="scale-[1.3] me-[10px]" />
                             <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
                               Capture Image

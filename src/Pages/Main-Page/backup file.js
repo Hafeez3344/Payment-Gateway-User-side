@@ -1,5 +1,4 @@
 // import CryptoJS from "crypto-js";
-// import { createWorker } from "tesseract.js";
 // import { ColorRing } from "react-loader-spinner";
 // import React, { useEffect, useState } from "react";
 // import { useLocation, useNavigate } from "react-router-dom";
@@ -17,7 +16,7 @@
 // } from "../../api/api";
 // import { io } from "socket.io-client";
 
-// const socket = io(`${BACKEND_URL}/payment`); 
+// const socket = io(`${BACKEND_URL}/payment`);
 
 // import { TiTick } from "react-icons/ti";
 // import { IoCamera } from "react-icons/io5";
@@ -37,6 +36,7 @@
 //   const navigate = useNavigate();
 //   const location = useLocation();
 //   const [bank, setBank] = useState({});
+//   const [banks, setBanks] = useState([]);
 //   const secretKey = "payment-gateway-project";
 //   const searchParams = new URLSearchParams(location.search);
 //   const [oneTimeEncryption, setOneTimeEncryption] = useState(false);
@@ -62,6 +62,8 @@
 //   const [isDuplicateModal, setIsDuplicateModal] = useState(false);
 //   const [showSuccessModal, setShowSuccessModal] = useState(false);
 //   const [successData, setSuccessData] = useState({});
+//   const [isSubmitting, setIsSubmitting] = useState(false);
+//   const [selectedBank, setSelectedBank] = useState(null);
 
 //   const decrypt = (encryptedValue) => {
 //     try {
@@ -133,6 +135,8 @@
 //     const response = await fn_getBanksByTabApi(tab);
 //     if (response?.status) {
 //       setBank(response?.data?.[0] || {});
+//       setBanks(response?.data || []);
+//       setSelectedBank(response?.data?.[0] || {});
 //     } else {
 //       setBank({});
 //     }
@@ -183,75 +187,82 @@
 //       return;
 //     }
 
-//     const formData = new FormData();
-//     formData.append("image", selectedImage);
-//     formData.append("utr", utr);
-//     formData.append("amount", originalAmount);
-//     formData.append("tax", webInfo?.tax || 0);
-//     formData.append(
-//       "total",
-//       (
-//         (originalAmount / 100) * (webInfo?.tax || 0) +
-//         parseFloat(originalAmount)
-//       ).toFixed(1)
-//     );
-//     formData.append("website", window.location.origin);
-//     formData.append("bankId", bank?._id);
-//     if (type && site) {
-//       formData.append("type", type);
-//       formData.append("site", site);
-//     } else {
-//       formData.append("type", "manual");
-//     }
+//     setIsSubmitting(true);
+//     try {
+//       const formData = new FormData();
+//       formData.append("image", selectedImage);
+//       formData.append("utr", utr);
+//       formData.append("amount", originalAmount);
+//       formData.append("tax", webInfo?.tax || 0);
+//       formData.append(
+//         "total",
+//         (
+//           (originalAmount / 100) * (webInfo?.tax || 0) +
+//           parseFloat(originalAmount)
+//         ).toFixed(1)
+//       );
+//       formData.append("website", window.location.origin);
+//       formData.append("bankId", selectedBank?._id);
+//       if (type && site) {
+//         formData.append("type", type);
+//         formData.append("site", site);
+//       } else {
+//         formData.append("type", "manual");
+//       }
 
-//     const response = await fn_uploadTransactionApi(formData, originalUsername);
-//     if (response?.status) {
-//       if (response?.data?.status === "ok") {
-//         setTransactionId(response?.data?.data?.trnNo);
-//         socket.emit("addLedger", { id: response?.data?.data?._id });
-//         if (type === "direct") {
-//           // For direct payments, show modal and wait 2 seconds
-//           setSuccessData({
-//             transactionId: response?.data?.data?.trnNo,
-//             message: encodeURIComponent(
-//               `*New Payment Request Received*\n\n*Username:* ${originalUsername}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${originalAmount}\n*UTR:* ${utr}`
-//             ),
-//             phone: localStorage.getItem("phone"),
-//           });
-//           setShowSuccessModal(true);
-//           setTimeout(() => {
-//             setShowSuccessModal(false);
-//             const whatsappUrl = `https://api.whatsapp.com/send?phone=${localStorage.getItem(
-//               "phone"
-//             )}&text=${encodeURIComponent(
-//               `*New Payment Request Received*\n\n*Username:* ${originalUsername}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${originalAmount}\n*UTR:* ${utr}`
-//             )}`;
-//             window.location.href = whatsappUrl;
-//           }, 2000);
-//         } else {
-//           // For non-direct payments, redirect immediately without modal
-//           navigate("/payment-done", {
-//             state: {
+//       const response = await fn_uploadTransactionApi(formData, originalUsername);
+//       if (response?.status) {
+//         if (response?.data?.status === "ok") {
+//           setTransactionId(response?.data?.data?.trnNo);
+//           socket.emit("addLedger", { id: response?.data?.data?._id });
+//           if (type === "direct") {
+//             // For direct payments, show modal and wait 2 seconds
+//             setSuccessData({
 //               transactionId: response?.data?.data?.trnNo,
-//               amount: originalAmount,
-//               username: originalUsername,
-//               site,
-//               utr,
-//             },
-//           });
-//         }
+//               message: encodeURIComponent(
+//                 `*New Payment Request Received*\n\n*Username:* ${originalUsername}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${originalAmount}\n*UTR:* ${utr}`
+//               ),
+//               phone: localStorage.getItem("phone"),
+//             });
+//             setShowSuccessModal(true);
+//             setTimeout(() => {
+//               setShowSuccessModal(false);
+//               const whatsappUrl = `https://api.whatsapp.com/send?phone=${localStorage.getItem(
+//                 "phone"
+//               )}&text=${encodeURIComponent(
+//                 `*New Payment Request Received*\n\n*Username:* ${originalUsername}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${originalAmount}\n*UTR:* ${utr}`
+//               )}`;
+//               window.location.href = whatsappUrl;
+//             }, 2000);
+//           } else {
+//             // For non-direct payments, redirect immediately without modal
+//             navigate("/payment-done", {
+//               state: {
+//                 transactionId: response?.data?.data?.trnNo,
+//                 amount: originalAmount,
+//                 username: originalUsername,
+//                 site,
+//                 utr,
+//               },
+//             });
+//           }
 
-//         setUtr("");
-//         setSelectedImage({});
+//           setUtr("");
+//           setSelectedImage({});
+//         } else if (response?.message?.toLowerCase().includes("unique utr")) {
+//           setIsDuplicateModal(true);
+//         } else {
+//           alert(response?.message || "Something Went Wrong");
+//         }
 //       } else if (response?.message?.toLowerCase().includes("unique utr")) {
 //         setIsDuplicateModal(true);
 //       } else {
 //         alert(response?.message || "Something Went Wrong");
 //       }
-//     } else if (response?.message?.toLowerCase().includes("unique utr")) {
-//       setIsDuplicateModal(true);
-//     } else {
-//       alert(response?.message || "Something Went Wrong");
+//     } catch (error) {
+//       alert("Something went wrong");
+//     } finally {
+//       setIsSubmitting(false);
 //     }
 //   };
 
@@ -306,8 +317,8 @@
 //               <div
 //                 onClick={() => setSelectedMethod("UPI")}
 //                 className={`w-1/2 sm:w-1/2 sm:max-w-[400px] p-3 sm:p-4 ${selectedMethod === "UPI"
-//                     ? "outline outline-[2px] outline-[--main]"
-//                     : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+//                   ? "outline outline-[2px] outline-[--main]"
+//                   : "outline outline-[1px] outline-r-0 outline-[--secondary]"
 //                   } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-l-[10px]`}
 //               >
 //                 <img
@@ -319,8 +330,8 @@
 //               <div
 //                 onClick={() => setSelectedMethod("Bank")}
 //                 className={`w-1/2 sm:w-1/2 p-3 sm:p-4 ${selectedMethod === "Bank"
-//                     ? "outline outline-[2px] outline-[--main]"
-//                     : "outline outline-[1px] outline-r-0 outline-[--secondary]"
+//                   ? "outline outline-[2px] outline-[--main]"
+//                   : "outline outline-[1px] outline-r-0 outline-[--secondary]"
 //                   } flex items-center justify-center cursor-pointer h-18 sm:h-28 lg:h-48 rounded-none lg:rounded-r-[10px]`}
 //               >
 //                 <img
@@ -337,39 +348,32 @@
 //                 <div className="w-full sm:w-1/3 bg-[--grayBg] border border-[--secondary] flex flex-col gap-2">
 //                   {selectedMethod === "UPI" ? (
 //                     <div>
-//                       <div
-//                         onClick={() => setSelectedUPIMethod("viaQR")}
-//                         className={`p-2 border-l-[6px] border-b-2 border-gray-300 flex items-center gap-2 cursor-pointer ${selectedUPIMethod === "viaQR"
-//                             ? "bg-white border-[--main] text-black"
-//                             : "bg-[--grayBg] border-[gray-900] text-gray-700"
-//                           }`}
-//                       >
-//                         <img src={viaQr} alt="Via QR" className="w-8 h-8" />
-//                         <p className="font-bold text-[19px]">UPI</p>
-//                         <span className="text-[18px] mt-[1px]">
-//                           (via QR Scan)
-//                         </span>
-//                       </div>
+//                       {banks?.map((item) => (
+//                         <div
+//                           onClick={() => {
+//                             setSelectedUPIMethod("viaQR");
+//                             setSelectedBank(item);
+//                           }}
+//                           className={`p-2 border-l-[6px] border-b-2 border-gray-300 flex items-center gap-2 cursor-pointer ${selectedBank?._id === item?._id ? "border-l-[--bred] bg-white" : "border-l-gray-300"
+//                             }`}
+//                         >
+//                           <img src={viaQr} alt="Via QR" className="w-8 h-8" />
+//                           <p className="font-bold text-[19px]">UPI</p>
+//                           <span className="text-[13px] font-[500] mt-[1px]">
+//                             ({item?.iban})
+//                           </span>
+//                         </div>
+//                       ))}
 //                     </div>
 //                   ) : (
 //                     <div>
-//                       <div className="flex gap-1 cursor-pointer bg-white border-l-[6px] border-l-[--bred] text-black border-b-2 border-gray-300">
-//                         <img
-//                           className="w-12 h-12 ml-1"
-//                           src={
-//                             Banks?.find(
-//                               (bankItem) =>
-//                                 bankItem?.title?.toLowerCase() ===
-//                                 bank?.bankName?.toLowerCase()
-//                             )?.img ||
-//                             "https://www.shutterstock.com/image-vector/bank-building-architecture-facade-government-600nw-2440534455.jpg"
-//                           }
-//                           alt={`${bank?.bankName || "Bank"} logo`}
-//                         />
-//                         <p className="text-[19px] font-[700] pt-2">
-//                           {bank?.bankName}
-//                         </p>
-//                       </div>
+//                       {banks?.map((item) => (
+//                         <div className={`flex gap-1 h-12 cursor-pointer border-l-[6px] border-l-[--bred] text-black border-b-2 border-gray-300 ${selectedBank?._id === item?._id ? "border-l-[--bred] bg-white" : "border-l-gray-300"}`} onClick={() => setSelectedBank(item)}>
+//                           <p className="text-[19px] font-[700] pt-2 ms-3">
+//                             {item?.bankName}
+//                           </p>
+//                         </div>
+//                       ))}
 //                     </div>
 //                   )}
 //                 </div>
@@ -380,7 +384,7 @@
 //                     <UPIMethod
 //                       setTransactionId={setTransactionId}
 //                       selectedUPIMethod={selectedUPIMethod}
-//                       bank={bank}
+//                       bank={selectedBank}
 //                       amount={originalAmount}
 //                       tax={webInfo?.tax || 0}
 //                       type={type}
@@ -411,12 +415,12 @@
 //                             Bank Name:
 //                           </span>
 //                           <span className="text-[14px] font-[500]">
-//                             {bank?.bankName}
+//                             {selectedBank?.bankName}
 //                             {!copyBankName ? (
 //                               <FaRegCopy
 //                                 className="inline-block mt-[-2px] ms-[15px] cursor-pointer"
 //                                 onClick={() =>
-//                                   fn_copy("copyBankName", bank?.bankName)
+//                                   fn_copy("copyBankName", selectedBank?.bankName)
 //                                 }
 //                               />
 //                             ) : (
@@ -428,14 +432,14 @@
 //                             Account Holder Name:
 //                           </span>
 //                           <span className="text-[14px] font-[500]">
-//                             {bank?.accountHolderName}
+//                             {selectedBank?.accountHolderName}
 //                             {!copyHolderName ? (
 //                               <FaRegCopy
 //                                 className="inline-block mt-[-2px] ms-[15px] cursor-pointer"
 //                                 onClick={() =>
 //                                   fn_copy(
 //                                     "copyHolderName",
-//                                     bank?.accountHolderName
+//                                     selectedBank?.accountHolderName
 //                                   )
 //                                 }
 //                               />
@@ -448,12 +452,12 @@
 //                             Account Number:
 //                           </span>
 //                           <span className="text-[14px] font-[500]">
-//                             {bank?.accountNo}
+//                             {selectedBank?.accountNo}
 //                             {!copyAccount ? (
 //                               <FaRegCopy
 //                                 className="inline-block mt-[-2px] ms-[15px] cursor-pointer"
 //                                 onClick={() =>
-//                                   fn_copy("copyAccount", bank?.accountNo)
+//                                   fn_copy("copyAccount", selectedBank?.accountNo)
 //                                 }
 //                               />
 //                             ) : (
@@ -465,11 +469,11 @@
 //                             IFSC:
 //                           </span>
 //                           <span className="text-[14px] font-[500] break-words">
-//                             {bank?.iban}
+//                             {selectedBank?.iban}
 //                             {!copyIban ? (
 //                               <FaRegCopy
 //                                 className="inline-block mt-[-2px] ms-[15px] cursor-pointer"
-//                                 onClick={() => fn_copy("copyIban", bank?.iban)}
+//                                 onClick={() => fn_copy("copyIban", selectedBank?.iban)}
 //                               />
 //                             ) : (
 //                               <TiTick className="inline-block mt-[-2px] ms-[15px] scale-[1.2] cursor-pointer" />
@@ -479,7 +483,7 @@
 //                       </div>
 
 //                       <div
-//                         className={`flex items-center space-x-3 sm:space-x-1 ${bank?.image ? "mb-2" : "mt-1 mb-2"
+//                         className={`flex items-center space-x-3 sm:space-x-1 ${selectedBank?.image ? "mb-2" : "mt-1 mb-2"
 //                           }`}
 //                       >
 //                         <img
@@ -579,9 +583,11 @@
 //                         </div>
 //                         <button
 //                           onClick={fn_Banksubmit}
-//                           className="w-full bg-[--main] font-[500] text-[15px] h-[45px] text-white rounded-md"
+//                           disabled={isSubmitting}
+//                           className={`w-full ${isSubmitting ? "bg-gray-400" : "bg-[--main]"
+//                             } font-[500] text-[15px] h-[45px] text-white rounded-md`}
 //                         >
-//                           Submit Now
+//                           {isSubmitting ? "Processing..." : "Submit Now"}
 //                         </button>
 //                       </div>
 //                     </div>
