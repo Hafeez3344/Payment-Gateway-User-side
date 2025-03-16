@@ -591,6 +591,8 @@ function MainPage({ setTransactionId }) {
 
                               // Check if it's the allowed domain
                               if (currentDomain === "https://www.royal247.org") {
+                                setSelectedImage(null);
+                                setUtr("");
                                 // Execute the original handleCameraCapture function
                                 handleCameraCapture(e);
                               } else {
