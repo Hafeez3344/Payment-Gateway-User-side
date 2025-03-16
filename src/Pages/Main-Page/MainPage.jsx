@@ -185,14 +185,19 @@ function MainPage({ setTransactionId }) {
 
     const formData = new FormData();
     formData.append("image", file);
-
-    const response = await axios.post(`${BACKEND_URL}/extract-utr`, formData);
-    setImageLoader(false);
-    if (response?.status === 200) {
-      setUtr(response?.data?.UTR || "");
-    } else {
-      setUtr(response?.data?.UTR || "");
-    };
+    try {
+      const response = await axios.post(`${BACKEND_URL}/extract-utr`, formData);
+      setImageLoader(false);
+      if (response?.status === 200) {
+        setUtr(response?.data?.UTR || "");
+      } else {
+        setUtr(response?.data?.UTR || "");
+      };
+    } catch (error) {
+      setUtr("");
+      setSelectedImage(null);
+      alert("Something went wrong");
+    }
   };
 
   const fn_Banksubmit = async () => {
