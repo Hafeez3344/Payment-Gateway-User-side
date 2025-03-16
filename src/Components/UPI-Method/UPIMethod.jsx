@@ -358,7 +358,7 @@ function UPIMethod({
         {/* second section */}
         {selectedUPIMethod === "viaQR" && (
           <div className="flex flex-col gap-2 sm:gap-4">
-            <div className="flex gap-3 items-center">
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-3 sm:items-center">
               <label className="w-[150px]">
                 <input
                   type="file"
@@ -380,7 +380,7 @@ function UPIMethod({
                 {!selectedImage ? (
                   <span>Attach transaction slip here</span>
                 ) : (
-                  <span>{selectedImage?.name}</span>
+                  <span>{selectedImage?.name?.length > 20 ? selectedImage.name.slice(0, 20) + "..." : selectedImage?.name}</span>
                 )}
               </p>
               {imageLoader && (
