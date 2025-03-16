@@ -1,51 +1,46 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ColorRing } from "react-loader-spinner";
-import attention from "../../assets/attention.gif";
-import cloudupload from "../../assets/cloudupload.svg";
+import axios from "axios";
 import { Modal } from "antd";
-import cancel from "../../assets/cancel.gif";
-import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
-import { createWorker } from "tesseract.js";
+import Webcam from "react-webcam";
+// import { io } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
+// const socket = io(`${BACKEND_URL}/payment`);
+import { ColorRing } from "react-loader-spinner";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+
 import { BACKEND_URL, fn_uploadTransactionApi } from "../../api/api";
-import { FaRegCopy } from "react-icons/fa6";
+
 import { TiTick } from "react-icons/ti";
 import { IoCamera } from "react-icons/io5";
-import { io } from "socket.io-client";
-import axios from "axios";
+import { FaRegCopy } from "react-icons/fa6";
+import cancel from "../../assets/cancel.gif";
+import attention from "../../assets/attention.gif";
+import cloudupload from "../../assets/cloudupload.svg";
+import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
 
-const socket = io(`${BACKEND_URL}/payment`);
 
-function UPIMethod({
-  setTransactionId,
-  selectedUPIMethod = "viaQR",
-  bank,
-  amount,
-  tax,
-  total,
-  username,
-  type,
-  site,
-}) {
+function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount, tax, total, username, type, site }) {
+
+  const webcamRef = useRef(null);
   const navigate = useNavigate();
   const [utr, setUtr] = useState("");
-  const [checkBox, setCheckBox] = useState(false);
-  const [imageLoader, setImageLoader] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [processingError, setProcessingError] = useState("");
+  const currentDomain = window.location.origin;
   const [copyURL, setCopyUPI] = useState(false);
+  const [checkBox, setCheckBox] = useState(false);
+  const [successData, setSuccessData] = useState({});
+  const [imageLoader, setImageLoader] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [isDuplicateModal, setIsDuplicateModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successData, setSuccessData] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fn_selectImage = async (e) => {
+
     const file = e?.target?.files?.[0];
     if (!file) return;
 
     setSelectedImage(file);
     setImageLoader(true);
-    setProcessingError("");
     setUtr("");
 
     const formData = new FormData();
@@ -67,7 +62,6 @@ function UPIMethod({
 
     setSelectedImage(file);
     setImageLoader(true);
-    setProcessingError("");
     setUtr("");
 
     const formData = new FormData();
@@ -83,6 +77,7 @@ function UPIMethod({
       };
     } catch (error) {
       setUtr("");
+      setImageLoader(false);
       setSelectedImage(null);
       alert("Something went wrong");
     }
@@ -113,7 +108,7 @@ function UPIMethod({
       const response = await fn_uploadTransactionApi(formData, username);
       if (response?.status) {
         if (response?.data?.status === "ok") {
-          socket.emit("addLedger", { id: response?.data?.data?._id });
+          // socket.emit("addLedger", { id: response?.data?.data?._id });
 
           setTransactionId(response?.data?.data?.trnNo);
 
@@ -187,69 +182,41 @@ function UPIMethod({
     }
   };
 
+  const captureAndUpload = useCallback(async () => {
+    if (!webcamRef.current || !webcamRef.current.video) return;
+
+    const imageSrc = webcamRef.current.getScreenshot();
+    if (!imageSrc) {
+      console.error("Screenshot failed!");
+      return;
+    }
+
+    const response = await fetch(imageSrc);
+    const blob = await response.blob();
+    const file = new File([blob], "captured_image.jpg", { type: "image/jpeg" });
+
+    setImagePreview(imageSrc);
+    setImageLoader(true);
+    setUtr("");
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const apiResponse = await axios.post(`${BACKEND_URL}/extract-utr`, formData);
+      console.log("API Response:", apiResponse);
+
+      setImageLoader(false);
+      setUtr(apiResponse?.data?.UTR || "");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      setImageLoader(false);
+    }
+  }, []);
+
   return (
     <>
       <div className="rounded-tr-md rounded-br-md  flex flex-col">
-        {/* first-section */}
-        {/* <div className="flex flex-col items-start">
-        {selectedUPIMethod === "viaQR" ? (
-          <div>
-            {bank?.image ? (
-              <>
-                <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
-                  Scan to Pay
-                </p>
-                <div className="flex gap-[30px] items-center">
-                  <img
-                    src={`${BACKEND_URL}/${bank?.image}`}
-                    alt="QR Code"
-                    className="w-[95px] sm:w-[110px]"
-                  />
-                  <div className="mb-4">
-                    <p className="mb-1 flex items-center gap-[4px]">
-                      <span className="text-[16px] font-[700]">Scan and Pay</span>{" "}
-                      <span className="text-[17px] font-[700] text-[--main] mb-[-2px]">
-                        ₹{total}
-                      </span>
-                    </p>
-                    <p className="text-[15px]">
-                      <span className="font-[500]">UPI ID:</span> {bank?.iban}
-                    </p>
-                  </div>
-                </div>
-              </>
-            ) : null}
-            <div className="flex items-center my-[18px]">
-              <img
-                src={attention}
-                alt="Attention Sign"
-                className="w-12 sm:w-16 lg:w-[90px] mb-2 sm:mb-0 ml-[-22px]"
-              />
-              <p className="italic text-gray-500 text-[15px]">
-                After transfer the payment in the UPI <br /> Account, please
-                attach the receipt below.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center sm:items-start justify-center w-full">
-            <p className="text-[17px] sm:text-[23px] font-[700] mb-[1.2rem] text-center sm:text-left">
-              Scan to Pay
-            </p>
-            <input
-              type="text"
-              placeholder="Enter UPI ID"
-              className="w-[300px] sm:w-[450px] h-[45px] border px-[20px] rounded-md focus:outline-none text-[14px] mb-4"
-            />
-            <button
-              onClick={() => navigate("/waiting-for-upi-approval")}
-              className="w-[300px] sm:w-[450px] bg-[--main] font-[500] text-[15px] h-[45px] text-white rounded-md"
-            >
-              Pay Now
-            </button>
-          </div>
-        )}
-      </div> */}
         <div className="flex flex-col items-start">
           {selectedUPIMethod === "viaQR" ? (
             <div>
@@ -383,23 +350,6 @@ function UPIMethod({
               )}
             </div>
 
-            {/* <label className="flex sm:hidden">
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden text-wrap"
-                onChange={handleCameraCapture} 
-
-              />
-              <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto flex">
-                <IoCamera className="scale-[1.3] me-[10px]" />
-                <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
-                  Capture Image
-                </span>
-              </div>
-            </label> */}
-
             <label className="flex sm:hidden">
               <input
                 type="file"
@@ -407,19 +357,12 @@ function UPIMethod({
                 capture="environment"
                 className="hidden text-wrap"
                 onChange={(e) => {
-                  // Get the current domain
-                  const currentDomain = window.location.origin;
-
-                  // Check if it's the allowed domain
                   if (currentDomain === "https://www.royal247.org") {
-                    setSelectedImage(null);
                     setUtr("");
-                    // Execute the original handleCameraCapture function
+                    setSelectedImage(null);
                     handleCameraCapture(e);
                   } else {
-                    // Show "Coming Soon" alert
                     alert("Coming Soon");
-                    // Clear the input value to allow selecting the same file again
                     e.target.value = null;
                   }
                 }}
@@ -431,6 +374,28 @@ function UPIMethod({
                 </span>
               </div>
             </label>
+            {currentDomain === "https://www.royal247.org" && (
+              <>
+                <Webcam
+                  ref={webcamRef}
+                  screenshotFormat="image/jpeg"
+                  width={350}
+                  height={250}
+                  forceScreenshotSourceSize
+                  videoConstraints={{
+                    facingMode: "environment",
+                  }}
+                  className="w-full max-w-sm rounded-lg shadow-lg"
+                />
+                <button
+                  onClick={captureAndUpload}
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md"
+                >
+                  Take Photo
+                </button>
+                {imagePreview && <img src={imagePreview} alt="Captured" className="mt-4 w-40 h-40 object-cover rounded-md" />}
+              </>
+            )}
 
             <input
               type="text"
@@ -462,37 +427,7 @@ function UPIMethod({
             </button>
           </div>
         )}
-        <Modal
-          title="Duplicate Transaction"
-          open={isDuplicateModal}
-          onOk={() => setIsDuplicateModal(false)}
-          onCancel={() => setIsDuplicateModal(false)}
-          centered
-        >
-          <div className="py-4 flex flex-col items-center">
-            {/* Cancel Animation */}
-            <div className="flex justify-center mb-6">
-              <div className="bg-red-500 rounded-full p-2">
-                <img
-                  src={cancel}
-                  alt="Cancel Icon"
-                  className="w-24 sm:w-28 h-24 sm:h-28 object-contain"
-                />
-              </div>
-            </div>
 
-            {/* Error Message */}
-            <p className="text-xl font-bold text-gray-800 mb-4">
-              OOPS! Duplicate UTR
-            </p>
-            <p className="text-red-500 font-medium text-center">
-              This UTR number has already been used!
-            </p>
-            <p className="mt-2 text-gray-500 text-center">
-              Please enter a unique UTR number for your transaction.
-            </p>
-          </div>
-        </Modal>
       </div>
       {/* Success Modal */}
       <Modal
@@ -521,6 +456,38 @@ function UPIMethod({
             {type === "direct"
               ? "Redirecting to WhatsApp..."
               : "Redirecting..."}
+          </p>
+        </div>
+      </Modal>
+      {/* Duplicate Transaction */}
+      <Modal
+        title="Duplicate Transaction"
+        open={isDuplicateModal}
+        onOk={() => setIsDuplicateModal(false)}
+        onCancel={() => setIsDuplicateModal(false)}
+        centered
+      >
+        <div className="py-4 flex flex-col items-center">
+          {/* Cancel Animation */}
+          <div className="flex justify-center mb-6">
+            <div className="bg-red-500 rounded-full p-2">
+              <img
+                src={cancel}
+                alt="Cancel Icon"
+                className="w-24 sm:w-28 h-24 sm:h-28 object-contain"
+              />
+            </div>
+          </div>
+
+          {/* Error Message */}
+          <p className="text-xl font-bold text-gray-800 mb-4">
+            OOPS! Duplicate UTR
+          </p>
+          <p className="text-red-500 font-medium text-center">
+            This UTR number has already been used!
+          </p>
+          <p className="mt-2 text-gray-500 text-center">
+            Please enter a unique UTR number for your transaction.
           </p>
         </div>
       </Modal>
