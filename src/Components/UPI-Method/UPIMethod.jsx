@@ -61,7 +61,6 @@ function UPIMethod({
     return;
   };
 
-
   const handleCameraCapture = async (e) => {
     const file = e?.target?.files?.[0];
     if (!file) return;
@@ -71,41 +70,17 @@ function UPIMethod({
     setProcessingError("");
     setUtr("");
 
-    const worker = await createWorker("eng");
+    const formData = new FormData();
+    formData.append("image", file);
 
-    try {
-      const ret = await worker.recognize(file);
-      const allLines = ret?.data?.lines || [];
-      const specificText = allLines.filter((line) => {
-        return line.text?.split(/\s+/).some((word) => {
-          const isValidWord = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(word);
-          return isValidWord && word.length > 7;
-        });
-      });
-
-      const mostSpecificText = specificText
-        .map((text) => {
-          const matchedWord = text?.words?.find((word) => {
-            const wordText = word?.text || "";
-            const isAlphanumeric = /^(?=.*\d)[a-zA-Z0-9#]+$/.test(wordText);
-            return isAlphanumeric && wordText.length > 7;
-          });
-          return matchedWord || null;
-        })
-        .filter(Boolean);
-
-      const autoUTR = mostSpecificText?.[0]?.text || "";
-      setUtr(autoUTR); // This should set the UTR in the state
-    } catch (error) {
-      console.error("Receipt processing error:", error);
-      setProcessingError("Error processing receipt. Please enter UTR manually.");
-    } finally {
-      setImageLoader(false);
-      await worker.terminate();
-    }
+    const response = await axios.post(`${BACKEND_URL}/extract-utr`, formData);
+    setImageLoader(false);
+    if (response?.status === 200) {
+      setUtr(response?.data?.UTR || "");
+    } else {
+      setUtr(response?.data?.UTR || "");
+    };
   };
-
-
 
   const fn_QRsubmit = async () => {
     if (!selectedImage) return alert("Upload Transaction Slip");
