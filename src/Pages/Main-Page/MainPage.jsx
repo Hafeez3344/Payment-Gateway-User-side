@@ -1,27 +1,23 @@
-import CryptoJS from "crypto-js";
-import { ColorRing } from "react-loader-spinner";
-import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Modal } from "antd";
-import { createWorker } from "tesseract.js";
+import CryptoJS from "crypto-js";
+import Webcam from "react-webcam";
+// import { io } from "socket.io-client";
+// const socket = io(`${BACKEND_URL}/payment`);
+import { ColorRing } from "react-loader-spinner";
+import { useLocation, useNavigate } from "react-router-dom";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import Layout from "../../Layout/Layout";
-import { Banks } from "../../json-data/banks";
 import UPIMethod from "../../Components/UPI-Method/UPIMethod";
 import OrderSummary from "../../Components/OrderSummary/OrderSummary";
-import {
-  BACKEND_URL,
-  fn_getBanksByTabApi,
-  fn_getWebInfoApi,
-  fn_uploadTransactionApi,
-} from "../../api/api";
-import { io } from "socket.io-client";
+import { BACKEND_URL, fn_getBanksByTabApi, fn_getWebInfoApi, fn_uploadTransactionApi } from "../../api/api";
 
-const socket = io(`${BACKEND_URL}/payment`);
 
 import { TiTick } from "react-icons/ti";
 import { IoCamera } from "react-icons/io5";
 import viaQr from "../../assets/viaQr.svg";
+import cancel from "../../assets/cancel.gif";
 import { FaRegCopy } from "react-icons/fa6";
 import upilogo from "../../assets/upilogo.png";
 import banklogo from "../../assets/banklogo.svg";
@@ -29,21 +25,24 @@ import attention from "../../assets/attention.gif";
 import { FaExclamationCircle } from "react-icons/fa";
 import RefreshPage from "../Refresh-Page/RefreshPage";
 import cloudupload from "../../assets/cloudupload.svg";
-import cancel from "../../assets/cancel.gif";
 import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
-import axios from "axios";
 
 function MainPage({ setTransactionId }) {
+
   const navigate = useNavigate();
+  const webcamRef = useRef(null);
   const location = useLocation();
-  const [bank, setBank] = useState({});
-  const [banks, setBanks] = useState([]);
-  const secretKey = "payment-gateway-project";
   const searchParams = new URLSearchParams(location.search);
-  const [oneTimeEncryption, setOneTimeEncryption] = useState(false);
-  const [webInfo, setWebInfo] = useState({});
-  const type = searchParams.get("type");
+
+  const [bank, setBank] = useState({});
   const site = searchParams.get("site");
+  const type = searchParams.get("type");
+  const [banks, setBanks] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [webInfo, setWebInfo] = useState({});
+  const secretKey = "payment-gateway-project";
+  const currentDomain = window.location.origin;
+  const [oneTimeEncryption, setOneTimeEncryption] = useState(false);
 
   const [selectedMethod, setSelectedMethod] = useState("UPI");
   const [selectedUPIMethod, setSelectedUPIMethod] = useState("viaQR");
@@ -241,7 +240,7 @@ function MainPage({ setTransactionId }) {
       if (response?.status) {
         if (response?.data?.status === "ok") {
           setTransactionId(response?.data?.data?.trnNo);
-          socket.emit("addLedger", { id: response?.data?.data?._id });
+          // socket.emit("addLedger", { id: response?.data?.data?._id });
           if (type === "direct") {
             // For direct payments, show modal and wait 2 seconds
             setSuccessData({
@@ -300,21 +299,6 @@ function MainPage({ setTransactionId }) {
   const [copyBankName, setCopyBankName] = useState(false);
   const [copyHolderName, setCopyHolderName] = useState(false);
 
-  const fn_copy = (label, text) => {
-    if (label === "copyBankName") {
-      navigator.clipboard.writeText(text).then(() => setCopyBankName(true));
-    }
-    if (label === "copyHolderName") {
-      navigator.clipboard.writeText(text).then(() => setCopyHolderName(true));
-    }
-    if (label === "copyAccount") {
-      navigator.clipboard.writeText(text).then(() => setCopyAccount(true));
-    }
-    if (label === "copyIban") {
-      navigator.clipboard.writeText(text).then(() => setCopyIban(true));
-    }
-  };
-
   useEffect(() => {
     if (copyBankName) {
       setTimeout(() => setCopyBankName(false), 1000);
@@ -330,9 +314,66 @@ function MainPage({ setTransactionId }) {
     }
   }, [copyBankName, copyHolderName, copyAccount, copyIban]);
 
+  const fn_copy = (label, text) => {
+    if (label === "copyBankName") {
+      navigator.clipboard.writeText(text).then(() => setCopyBankName(true));
+    }
+    if (label === "copyHolderName") {
+      navigator.clipboard.writeText(text).then(() => setCopyHolderName(true));
+    }
+    if (label === "copyAccount") {
+      navigator.clipboard.writeText(text).then(() => setCopyAccount(true));
+    }
+    if (label === "copyIban") {
+      navigator.clipboard.writeText(text).then(() => setCopyIban(true));
+    }
+  };
+
   if (!isValidNumber(originalAmount)) {
     return <RefreshPage />;
-  }
+  };
+
+  const captureAndUpload = useCallback(async () => {
+    if (!webcamRef.current || !webcamRef.current.video) return;
+
+    const imageSrc = webcamRef.current.getScreenshot();
+    if (!imageSrc) {
+      console.error("Screenshot failed!");
+      return;
+    }
+
+    try {
+      const response = await fetch(imageSrc);
+      const blob = await response.blob();
+      const file = new File([blob], "captured_image.jpg", { type: "image/jpeg" });
+
+      setImageLoader(true);
+      setUtr("");
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      setOpen(false);
+
+      const apiResponse = await axios.post(`${BACKEND_URL}/extract-utr`, formData);
+      console.log("API Response:", apiResponse);
+
+      setImageLoader(false);
+      setUtr(apiResponse?.data?.UTR || "");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      setImageLoader(false);
+    }
+  }, [setImageLoader, setUtr, setOpen]);
+
+  const fn_openCameraModal = () => {
+    if (currentDomain === "https://www.royal247.org") {
+      setOpen(true);
+    } else {
+      setOpen(false);
+      alert("Coming Soon");
+    }
+  };
 
   return (
     <Layout>
@@ -421,6 +462,7 @@ function MainPage({ setTransactionId }) {
                         parseFloat(originalAmount)
                       ).toFixed(1)}
                       username={originalUsername}
+                      captureAndUpload={captureAndUpload}
                     />
                   ) : (
                     <div className="rounded-tr-md rounded-br-md flex flex-col">
@@ -568,53 +610,32 @@ function MainPage({ setTransactionId }) {
                             />
                           )}
                         </div>
-                        {/* <label className="flex sm:hidden">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            className="hidden"
-                            onChange={handleCameraCapture}
-                          />
-                          <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer w-full items-center justify-center text-gray-700 sm:w-auto flex">
-                            <IoCamera className="scale-[1.3] me-[10px]" />
-                            <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
-                              Capture Image
-                            </span>
-                          </div>
-                        </label> */}
 
-                        <label className="flex sm:hidden">
+                        {/* <label className="flex sm:hidden">
                           <input
                             type="file"
                             accept="image/*"
                             capture="environment"
                             className="hidden text-wrap"
                             onChange={(e) => {
-                              // Get the current domain
                               const currentDomain = window.location.origin;
-
-                              // Check if it's the allowed domain
                               if (currentDomain === "https://www.royal247.org") {
                                 setSelectedImage(null);
                                 setUtr("");
-                                // Execute the original handleCameraCapture function
                                 handleCameraCapture(e);
                               } else {
-                                // Show "Coming Soon" alert
                                 alert("Coming Soon");
-                                // Clear the input value to allow selecting the same file again
                                 e.target.value = null;
                               }
                             }}
-                          />
-                          <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto flex">
-                            <IoCamera className="scale-[1.3] me-[10px]" />
-                            <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
-                              Capture Image
-                            </span>
-                          </div>
-                        </label>
+                          /> */}
+                        <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto flex" onClick={fn_openCameraModal}>
+                          <IoCamera className="scale-[1.3] me-[10px]" />
+                          <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
+                            Capture Image
+                          </span>
+                        </div>
+                        {/* </label> */}
                         <input
                           type="text"
                           value={utr}
@@ -730,6 +751,31 @@ function MainPage({ setTransactionId }) {
               ? "Redirecting to WhatsApp..."
               : "Redirecting..."}
           </p>
+        </div>
+      </Modal>
+
+      {/* camera modal */}
+      <Modal
+        title="Capture Image"
+        open={open}
+        onOk={() => setOpen(false)}
+        onCancel={() => setOpen(false)}
+        centered
+        footer={null}
+      >
+        <div className="flex flex-col w-full items-center">
+          <div className="w-full h-[400px] bg-gray-100 rounded-[5px]">
+            <Webcam
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              width={"100%"}
+              height={400}
+              forceScreenshotSourceSize
+              videoConstraints={{ facingMode: "environment" }}
+              className="w-full max-w-sm rounded-lg shadow-lg"
+            />
+          </div>
+          <button onClick={captureAndUpload} className="h-[40px] w-full bg-[--main] mt-[10px] font-[500] text-[14px] rounded-[5px]">Capture Image</button>
         </div>
       </Modal>
     </Layout>
