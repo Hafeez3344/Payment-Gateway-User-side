@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import Layout from "../../Layout/Layout";
+import CaptureImage from "../../Components/CaptureImage";
 import UPIMethod from "../../Components/UPI-Method/UPIMethod";
 import OrderSummary from "../../Components/OrderSummary/OrderSummary";
 import { BACKEND_URL, fn_getBanksByTabApi, fn_getWebInfoApi, fn_uploadTransactionApi } from "../../api/api";
@@ -24,7 +25,6 @@ import { FaExclamationCircle } from "react-icons/fa";
 import RefreshPage from "../Refresh-Page/RefreshPage";
 import cloudupload from "../../assets/cloudupload.svg";
 import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
-import CaptureImage from "../../Components/CaptureImage";
 
 function MainPage({ setTransactionId }) {
 

@@ -68,7 +68,7 @@ const CaptureImage = ({ setUtr, setImageLoader, axios, BACKEND_URL }) => {
                 onCancel={() => setOpen(false)}
                 centered
                 footer={null}
-                bodyStyle={{ height: '80vh' }}
+                bodyStyle={{ maxHeight: '480px', height: "90vh" }}
             >
                 <div className="flex flex-col w-full h-full items-center">
                     <div className="w-full flex-grow bg-gray-100 rounded-[5px]">
