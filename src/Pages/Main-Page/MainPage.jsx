@@ -1,12 +1,11 @@
 import axios from "axios";
 import { Modal } from "antd";
 import CryptoJS from "crypto-js";
-import Webcam from "react-webcam";
 // import { io } from "socket.io-client";
 // const socket = io(`${BACKEND_URL}/payment`);
 import { ColorRing } from "react-loader-spinner";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import Layout from "../../Layout/Layout";
 import UPIMethod from "../../Components/UPI-Method/UPIMethod";
@@ -15,7 +14,6 @@ import { BACKEND_URL, fn_getBanksByTabApi, fn_getWebInfoApi, fn_uploadTransactio
 
 
 import { TiTick } from "react-icons/ti";
-import { IoCamera } from "react-icons/io5";
 import viaQr from "../../assets/viaQr.svg";
 import cancel from "../../assets/cancel.gif";
 import { FaRegCopy } from "react-icons/fa6";
@@ -26,11 +24,11 @@ import { FaExclamationCircle } from "react-icons/fa";
 import RefreshPage from "../Refresh-Page/RefreshPage";
 import cloudupload from "../../assets/cloudupload.svg";
 import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
+import CaptureImage from "../../Components/CaptureImage";
 
 function MainPage({ setTransactionId }) {
 
   const navigate = useNavigate();
-  const webcamRef = useRef(null);
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
 
@@ -38,10 +36,8 @@ function MainPage({ setTransactionId }) {
   const site = searchParams.get("site");
   const type = searchParams.get("type");
   const [banks, setBanks] = useState([]);
-  const [open, setOpen] = useState(false);
   const [webInfo, setWebInfo] = useState({});
   const secretKey = "payment-gateway-project";
-  const currentDomain = window.location.origin;
   const [oneTimeEncryption, setOneTimeEncryption] = useState(false);
 
   const [selectedMethod, setSelectedMethod] = useState("UPI");
@@ -53,11 +49,9 @@ function MainPage({ setTransactionId }) {
   const [originalUsername, setOriginalUsername] = useState("");
 
   const [utr, setUtr] = useState("");
-  const [isChangeUTR, setIsChangeUTR] = useState("");
   const [checkBox, setCheckBox] = useState(false);
   const [imageLoader, setImageLoader] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [processingError, setProcessingError] = useState("");
 
   const [isDuplicateModal, setIsDuplicateModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -157,7 +151,6 @@ function MainPage({ setTransactionId }) {
 
     setSelectedImage(file);
     setImageLoader(true);
-    setProcessingError("");
     setUtr("");
 
     const formData = new FormData();
@@ -171,32 +164,6 @@ function MainPage({ setTransactionId }) {
       setUtr(response?.data?.UTR || "");
     }
     return;
-  };
-
-  const handleCameraCapture = async (e) => {
-    const file = e?.target?.files?.[0];
-    if (!file) return;
-
-    setSelectedImage(file);
-    setImageLoader(true);
-    setProcessingError("");
-    setUtr("");
-
-    const formData = new FormData();
-    formData.append("image", file);
-    try {
-      const response = await axios.post(`${BACKEND_URL}/extract-utr`, formData);
-      setImageLoader(false);
-      if (response?.status === 200) {
-        setUtr(response?.data?.UTR || "");
-      } else {
-        setUtr(response?.data?.UTR || "");
-      };
-    } catch (error) {
-      setUtr("");
-      setSelectedImage(null);
-      alert("Something went wrong");
-    }
   };
 
   const fn_Banksubmit = async () => {
@@ -333,48 +300,6 @@ function MainPage({ setTransactionId }) {
     return <RefreshPage />;
   };
 
-  const captureAndUpload = useCallback(async () => {
-    if (!webcamRef.current || !webcamRef.current.video) return;
-
-    const imageSrc = webcamRef.current.getScreenshot();
-    if (!imageSrc) {
-      console.error("Screenshot failed!");
-      return;
-    }
-
-    try {
-      const response = await fetch(imageSrc);
-      const blob = await response.blob();
-      const file = new File([blob], "captured_image.jpg", { type: "image/jpeg" });
-
-      setImageLoader(true);
-      setUtr("");
-
-      const formData = new FormData();
-      formData.append("image", file);
-
-      setOpen(false);
-
-      const apiResponse = await axios.post(`${BACKEND_URL}/extract-utr`, formData);
-      console.log("API Response:", apiResponse);
-
-      setImageLoader(false);
-      setUtr(apiResponse?.data?.UTR || "");
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      setImageLoader(false);
-    }
-  }, [setImageLoader, setUtr, setOpen]);
-
-  const fn_openCameraModal = () => {
-    if (currentDomain === "https://www.royal247.org") {
-      setOpen(true);
-    } else {
-      setOpen(false);
-      alert("Coming Soon");
-    }
-  };
-
   return (
     <Layout>
       <div className="w-full max-w-[1200px] mx-auto my-[30px] md:my-[100px] sm:my-[60px] px-4 sm:px-0 md:scale-[0.9]">
@@ -462,7 +387,6 @@ function MainPage({ setTransactionId }) {
                         parseFloat(originalAmount)
                       ).toFixed(1)}
                       username={originalUsername}
-                      captureAndUpload={captureAndUpload}
                     />
                   ) : (
                     <div className="rounded-tr-md rounded-br-md flex flex-col">
@@ -629,12 +553,7 @@ function MainPage({ setTransactionId }) {
                               }
                             }}
                           /> */}
-                        <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto flex" onClick={fn_openCameraModal}>
-                          <IoCamera className="scale-[1.3] me-[10px]" />
-                          <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
-                            Capture Image
-                          </span>
-                        </div>
+                        <CaptureImage setUtr={setUtr} setImageLoader={setImageLoader} axios={axios} BACKEND_URL={BACKEND_URL} />
                         {/* </label> */}
                         <input
                           type="text"
@@ -751,31 +670,6 @@ function MainPage({ setTransactionId }) {
               ? "Redirecting to WhatsApp..."
               : "Redirecting..."}
           </p>
-        </div>
-      </Modal>
-
-      {/* camera modal */}
-      <Modal
-        title="Capture Image"
-        open={open}
-        onOk={() => setOpen(false)}
-        onCancel={() => setOpen(false)}
-        centered
-        footer={null}
-      >
-        <div className="flex flex-col w-full items-center">
-          <div className="w-full h-[400px] bg-gray-100 rounded-[5px]">
-            <Webcam
-              ref={webcamRef}
-              screenshotFormat="image/jpeg"
-              width={"100%"}
-              height={400}
-              forceScreenshotSourceSize
-              videoConstraints={{ facingMode: "environment" }}
-              className="w-full max-w-sm rounded-lg shadow-lg"
-            />
-          </div>
-          <button onClick={captureAndUpload} className="h-[40px] w-full bg-[--main] mt-[10px] font-[500] text-[14px] rounded-[5px]">Capture Image</button>
         </div>
       </Modal>
     </Layout>

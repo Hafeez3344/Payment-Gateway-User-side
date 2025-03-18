@@ -1,16 +1,15 @@
 import axios from "axios";
 import { Modal } from "antd";
-import Webcam from "react-webcam";
 // import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 // const socket = io(`${BACKEND_URL}/payment`);
 import { ColorRing } from "react-loader-spinner";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
+import CaptureImage from "../CaptureImage";
 import { BACKEND_URL, fn_uploadTransactionApi } from "../../api/api";
 
 import { TiTick } from "react-icons/ti";
-import { IoCamera } from "react-icons/io5";
 import { FaRegCopy } from "react-icons/fa6";
 import cancel from "../../assets/cancel.gif";
 import attention from "../../assets/attention.gif";
@@ -18,13 +17,10 @@ import cloudupload from "../../assets/cloudupload.svg";
 import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
 
 
-function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount, tax, total, username, type, site, captureAndUpload }) {
+function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount, tax, total, username, type, site }) {
 
-  const webcamRef = useRef(null);
   const navigate = useNavigate();
   const [utr, setUtr] = useState("");
-  const [open, setOpen] = useState(false);
-  const currentDomain = window.location.origin;
   const [copyURL, setCopyUPI] = useState(false);
   const [checkBox, setCheckBox] = useState(false);
   const [successData, setSuccessData] = useState({});
@@ -54,33 +50,6 @@ function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount
       setUtr(response?.data?.UTR || "");
     }
     return;
-  };
-
-  const handleCameraCapture = async (e) => {
-    const file = e?.target?.files?.[0];
-    if (!file) return;
-
-    setSelectedImage(file);
-    setImageLoader(true);
-    setUtr("");
-
-    const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-      const response = await axios.post(`${BACKEND_URL}/extract-utr`, formData);
-      setImageLoader(false);
-      if (response?.status === 200) {
-        setUtr(response?.data?.UTR || "");
-      } else {
-        setUtr(response?.data?.UTR || "");
-      };
-    } catch (error) {
-      setUtr("");
-      setImageLoader(false);
-      setSelectedImage(null);
-      alert("Something went wrong");
-    }
   };
 
   const fn_QRsubmit = async () => {
@@ -179,15 +148,6 @@ function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount
         .catch((err) => {
           console.error("Failed to copy text:", err);
         });
-    }
-  };
-
-  const fn_openCameraModal = () => {
-    if (currentDomain === "https://www.royal247.org") {
-      setOpen(true);
-    } else {
-      setOpen(false);
-      alert("Coming Soon");
     }
   };
 
@@ -344,12 +304,7 @@ function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount
                   }
                 }}
               /> */}
-            <div className="px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto flex" onClick={fn_openCameraModal}>
-              <IoCamera className="scale-[1.3] me-[10px]" />
-              <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
-                Capture Image
-              </span>
-            </div>
+            <CaptureImage setUtr={setUtr} setImageLoader={setImageLoader} axios={axios} BACKEND_URL={BACKEND_URL} />
             {/* </label> */}
             {/* {currentDomain === "https://www.royal247.org" && (
               <>
@@ -466,30 +421,6 @@ function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount
           <p className="mt-2 text-gray-500 text-center">
             Please enter a unique UTR number for your transaction.
           </p>
-        </div>
-      </Modal>
-      {/* camera modal */}
-      <Modal
-        title="Capture Image"
-        open={open}
-        onOk={() => setOpen(false)}
-        onCancel={() => setOpen(false)}
-        centered
-        footer={null}
-      >
-        <div className="flex flex-col w-full items-center">
-          <div className="w-full h-[400px] bg-gray-100 rounded-[5px]">
-            <Webcam
-              ref={webcamRef}
-              screenshotFormat="image/jpeg"
-              width={"100%"}
-              height={400}
-              forceScreenshotSourceSize
-              videoConstraints={{ facingMode: "environment" }}
-              className="w-full max-w-sm rounded-lg shadow-lg"
-            />
-          </div>
-          <button onClick={captureAndUpload} className="h-[40px] w-full bg-[--main] mt-[10px] font-[500] text-[14px] rounded-[5px]">Capture Image</button>
         </div>
       </Modal>
     </>
