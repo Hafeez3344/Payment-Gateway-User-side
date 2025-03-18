@@ -553,7 +553,7 @@ function MainPage({ setTransactionId }) {
                               }
                             }}
                           /> */}
-                        <CaptureImage setUtr={setUtr} setImageLoader={setImageLoader} axios={axios} BACKEND_URL={BACKEND_URL} />
+                        <CaptureImage setUtr={setUtr} setImageLoader={setImageLoader} axios={axios} BACKEND_URL={BACKEND_URL} setSelectedImage={setSelectedImage} />
                         {/* </label> */}
                         <input
                           type="text"

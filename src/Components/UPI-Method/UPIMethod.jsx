@@ -304,7 +304,7 @@ function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount
                   }
                 }}
               /> */}
-            <CaptureImage setUtr={setUtr} setImageLoader={setImageLoader} axios={axios} BACKEND_URL={BACKEND_URL} />
+            <CaptureImage setUtr={setUtr} setImageLoader={setImageLoader} axios={axios} BACKEND_URL={BACKEND_URL} setSelectedImage={setSelectedImage} />
             {/* </label> */}
             {/* {currentDomain === "https://www.royal247.org" && (
               <>

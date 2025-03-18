@@ -4,19 +4,16 @@ import React, { useCallback, useRef, useState } from 'react';
 
 import { IoCamera } from 'react-icons/io5';
 
-const CaptureImage = ({ setUtr, setImageLoader, axios, BACKEND_URL }) => {
+const CaptureImage = ({ setUtr, setImageLoader, axios, BACKEND_URL, setSelectedImage }) => {
 
     const webcamRef = useRef(null);
     const [open, setOpen] = useState(false);
-    const currentDomain = window.location.origin;
 
     const fn_openCameraModal = () => {
-        if (currentDomain === "https://www.royal247.org") {
-            setOpen(true);
-        } else {
-            setOpen(false);
-            alert("Coming Soon...");
-        }
+        setUtr("");
+        setOpen(true);
+        setImageLoader(false);
+        setSelectedImage(null);
     };
 
     const captureAndUpload = useCallback(async () => {
@@ -45,6 +42,7 @@ const CaptureImage = ({ setUtr, setImageLoader, axios, BACKEND_URL }) => {
             console.log("API Response:", apiResponse);
 
             setImageLoader(false);
+            setSelectedImage(file);
             setUtr(apiResponse?.data?.UTR || "");
         } catch (error) {
             console.error("Error uploading image:", error);
