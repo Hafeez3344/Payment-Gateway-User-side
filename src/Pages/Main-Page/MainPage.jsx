@@ -123,6 +123,7 @@ function MainPage({ setTransactionId }) {
     setCheckBox(false);
     fn_getBanks(selectedMethod.toLowerCase());
     fn_getWebInfo();
+    fn_getWesbiteDetails();
   }, [selectedMethod]);
 
   const fn_getBanks = async (tab) => {
@@ -256,6 +257,13 @@ function MainPage({ setTransactionId }) {
       alert("Something went wrong");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const fn_getWesbiteDetails = async () => {
+    const response = await axios.get(`${BACKEND_URL}/merchant/getWebsite?website=${window.location.origin}`);
+    if (response?.data?.status === "ok") {
+      localStorage.setItem("web", response?.data?.data?.merchantWebsite);
     }
   };
 

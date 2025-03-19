@@ -10,25 +10,26 @@ const PaymentDone = ({ transactionId, amount, username, site }) => {
   const location = useLocation();
   const containerHeight = window.innerHeight - 66 - 48;
   const phone = localStorage.getItem("phone");
-  const utr = location.state?.utr || ''; 
+  const utr = location.state?.utr || '';
 
   useEffect(() => {
-    if (!amount || amount === "") {
-      setTimeout(() => {
-        return window.location.replace("https://dial4bet.com");
-      }, 5000);
-    } else {
-      const timer = setTimeout(() => {
-        const message = encodeURIComponent(`Username: ${username}\nTransaction ID: ${transactionId}\nWebsite: ${site}\nAmount: ${amount}\nUTR: ${utr}`);
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
-        window.open(whatsappUrl, "_blank");
-      }, 5000);
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 7000);
+    setTimeout(() => {
+      return window.location.replace(localStorage.getItem('web'));
+    }, 5000);
+    // if (!amount || amount === "") {
 
-      return () => clearTimeout(timer);
-    }
+    // } else {
+    //   const timer = setTimeout(() => {
+    //     const message = encodeURIComponent(`Username: ${username}\nTransaction ID: ${transactionId}\nWebsite: ${site}\nAmount: ${amount}\nUTR: ${utr}`);
+    //     const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
+    //     window.open(whatsappUrl, "_blank");
+    //   }, 5000);
+    //   setTimeout(() => {
+    //     window.location.href = "/";
+    //   }, 7000);
+
+    //   return () => clearTimeout(timer);
+    // }
   }, []);
 
   return (

@@ -25,7 +25,7 @@ const Information = ({ savedUsername, savedSite, savedAmount }) => {
       setWebsiteLogo(response?.data?.data?.image);
       localStorage.setItem("phone", response?.data?.data?.phone);
     }
-  }
+  };
 
   useEffect(() => {
     fn_getWesbiteDetails();
