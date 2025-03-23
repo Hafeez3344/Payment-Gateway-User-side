@@ -73,7 +73,6 @@ function UPIMethod({ setTransactionId, selectedUPIMethod = "viaQR", bank, amount
       } else {
         formData.append("type", "manual");
       }
-
       const response = await fn_uploadTransactionApi(formData, username);
       if (response?.status) {
         if (response?.data?.status === "ok") {

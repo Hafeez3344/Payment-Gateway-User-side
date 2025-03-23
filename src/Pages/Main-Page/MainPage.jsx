@@ -180,7 +180,6 @@ function MainPage({ setTransactionId }) {
       alert("Verify the Uploaded Receipt Checkbox");
       return;
     }
-
     setIsSubmitting(true);
     try {
       const formData = new FormData();
