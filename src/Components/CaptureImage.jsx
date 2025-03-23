@@ -52,12 +52,12 @@ const CaptureImage = ({ setUtr, setImageLoader, axios, BACKEND_URL, setSelectedI
 
     return (
         <>
-            <div className="flex sm:hidden px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto" onClick={fn_openCameraModal}>
+            {/* <div className="flex sm:hidden px-2 sm:px-3 py-1 sm:py-2 h-[35px] sm:h-[45px] border border-black rounded-md cursor-pointer items-center justify-center text-gray-700 w-full sm:w-auto" onClick={fn_openCameraModal}>
                 <IoCamera className="scale-[1.3] me-[10px]" />
                 <span className="text-gray-400 text-sm sm:text-base font-[400] text-nowrap">
                     Capture Image
                 </span>
-            </div>
+            </div> */}
             {/* camera modal */}
             <Modal
                 title="Capture Image"
