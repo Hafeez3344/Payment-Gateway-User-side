@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Modal } from "antd";
 import CryptoJS from "crypto-js";
-import { io } from "socket.io-client";
+// import { io } from "socket.io-client";
 import { ColorRing } from "react-loader-spinner";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -27,7 +27,7 @@ import AnimationTickmarck from "../../assets/AnimationTickmarck.gif";
 
 function MainPage({ setTransactionId }) {
   
-  const socket = io(`${BACKEND_URL}/payment`);
+  // const socket = io(`${BACKEND_URL}/payment`);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -208,7 +208,7 @@ function MainPage({ setTransactionId }) {
       if (response?.status) {
         if (response?.data?.status === "ok") {
           setTransactionId(response?.data?.data?.trnNo);
-          socket.emit("addLedger", { id: response?.data?.data?._id });
+          // socket.emit("addLedger", { id: response?.data?.data?._id });
           if (type === "direct") {
             // For direct payments, show modal and wait 2 seconds
             setSuccessData({
