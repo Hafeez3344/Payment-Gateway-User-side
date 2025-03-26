@@ -1,6 +1,12 @@
 import axios from "axios";
 
-export const BACKEND_URL = "https://backend.royal247.org"
+export let BACKEND_URL = "";
+if (window.location.origin === "https://www.royal247.org" || window.location.origin === "http://localhost:5173") {
+    BACKEND_URL = "https://test-backend.royal247.org";
+} else {
+    BACKEND_URL = "https://backend.royal247.org"
+};
+
 // export const BACKEND_URL = "http://46.202.166.64:8000"
 
 
