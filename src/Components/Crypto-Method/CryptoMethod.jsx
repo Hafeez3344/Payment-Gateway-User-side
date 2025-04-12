@@ -70,21 +70,42 @@ function CryptoMethod({ setTransactionId, bank, amount, tax, total, username, ty
             }
 
             const response = await fn_uploadTransactionApi(formData, username);
-            if (response?.status === 200) {
-                setTransactionId(response?.data?.transactionId);
-                setSuccessData(response?.data);
-                setShowSuccessModal(true);
-                setTimeout(() => {
+            if (response?.status) {
+                if (response?.data?.status === "ok") {
+                    setTransactionId(response?.data?.data?.trnNo);
+
                     if (type === "direct") {
-                        window.location.href = `https://wa.me/${site}`;
+                        setSuccessData({
+                            transactionId: response?.data?.data?.trnNo,
+                            message: encodeURIComponent(
+                                `*New Payment Request Received*\n\n*Username:* ${username}\n*Transaction ID:* ${response?.data?.data?.trnNo}\n*Website:* ${site}\n*Amount:* ${amount}\n*UTR:* ${utr}`
+                            ),
+                            phone: localStorage.getItem("phone"),
+                        });
+                        setShowSuccessModal(true);
+                        setTimeout(() => {
+                            window.location.href = `https://wa.me/${site}`;
+                        }, 2000);
                     } else {
-                        navigate("/success");
+                        navigate("/payment-done", {
+                            state: {
+                                transactionId: response?.data?.data?.trnNo,
+                                amount,
+                                username,
+                                site,
+                                utr,
+                            },
+                        });
                     }
-                }, 3000);
-            } else if (response?.status === 409) {
+                } else if (response?.message?.toLowerCase().includes("unique utr")) {
+                    setIsDuplicateModal(true);
+                } else {
+                    alert(response?.message || "Something Went Wrong");
+                }
+            } else if (response?.message?.toLowerCase().includes("unique utr")) {
                 setIsDuplicateModal(true);
             } else {
-                alert("Something went wrong");
+                alert(response?.message || "Something Went Wrong");
             }
         } catch (error) {
             alert("Something went wrong");

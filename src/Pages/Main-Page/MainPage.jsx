@@ -357,7 +357,11 @@ function MainPage({ setTransactionId }) {
               className="w-8 h-8"
             /> */}
             {/* <p className="font-bold text-[19px]">{item?.cryptoName}</p> */}
-            <p className="font-bold text-[19px]">Crypto</p>
+            <p className="font-bold text-[19px]">Crypto
+             <span className="text-[13px] font-[500] ml-2 mt-[1px]">
+             ({item?.iban})
+            </span>
+            </p>
           </div>
         ));
     }
@@ -638,7 +642,7 @@ function MainPage({ setTransactionId }) {
             {Object.keys(bank).length > 0 ? (
               <div className="flex flex-col sm:flex-row md:min-h-[700px]">
                 {/* Sidebar */}
-                <div className="w-full sm:w-1/3 bg-[--grayBg] border border-[--secondary] flex flex-col gap-2">
+                <div className="w-full sm:w-1/3 bg-[--grayBg] flex flex-col border-t border-[--secondary]">
                   {renderSidebar()}
                 </div>
 
@@ -651,7 +655,7 @@ function MainPage({ setTransactionId }) {
               <div className="flex flex-col sm:flex-row md:min-h-[700px]">
                 <p className="text-center w-full">
                   <FaExclamationCircle className="inline-block text-[22px] mt-[-3px]" />
-                  &nbsp;&nbsp;No {selectedMethod === "UPI" && "UPI"} Bank Added
+                  &nbsp;&nbsp;No {selectedMethod === "UPI" ? "UPI" : selectedMethod === "Bank" ? "Bank" : "Crypto"} Account Added
                 </p>
               </div>
             )}
